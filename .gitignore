@@ -1,0 +1,11 @@
+*.py[cod]
+*.swp
+*.log
+*.db
+/.project
+/*.pydevproject
+/collect_static/
+/logs/*
+*.sqlite3
+/media
+/.settings

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <!-- Meta -->
+        <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+        <!-- End of Meta -->
+        
+        <!-- Page title -->
+        <title>Wide Admin - Login</title>
+        <!-- End of Page title -->
+        
+        <!-- Libraries -->
+        <link type="text/css" href="{{STATIC_URL}}css/login.css" rel="stylesheet" />    
+        
+        <script src="http://cdn.bootcss.com/jquery/1.11.1/jquery.min.js"></script>
+        <script type="text/javascript" src="{{STATIC_URL}}js/easyTooltip.js"></script>
+        <script type="text/javascript" src="{{STATIC_URL}}js/jquery-ui-1.7.2.custom.min.js"></script>
+        <!-- End of Libraries -->   
+    </head>
+    <body>
+    <div id="container">
+        <div class="logo">
+            <a href="#"><img src="{{STATIC_URL}}assets/logo.png" alt="" /></a>
+        </div>
+        <div id="box">
+            <form action="" method="POST">
+            {% csrf_token %}
+            <p class="main">
+                <label for="id_username">用户名:</label>
+                <input autofocus="true" class="form-control" id="id_username" maxlength="60" name="username" placeholder="请输入用户名" required="true" type="text">
+                <label for="id_password">密码:</label>
+                <input autofocus="true" class="form-control" id="id_password" maxlength="24" name="password" placeholder="请输入密码" required="true" type="password">
+            </p>
+            {% for item in error %}
+                <p style="color:red; text-align:center">{{item}}</p>
+            {% endfor %}
+            <p class="space">
+                <input type="submit" value="Login" class="login" />
+            </p>
+            </form>
+        </div>
+    </div>
+    <script type="text/javascript">
+    {% ifequal type_id 0 %}
+        alert('请先登录.')
+    {% endifequal %}
+    </script>
+    </body>
+</html>

@@ -1,0 +1,25 @@
+{% load mongonaut_tags %}
+{% if field.is_hidden %}
+    {{ field }}
+{% else %}
+<div class="clearfix {% if field.errors %}error{% endif %}">
+    {% ifnotequal field.label 'id' %}
+        <h4 for="{{ field.auto_id }}" {% if field.field.required %}class="requiredField"{% endif %}>
+            {% get_document_key view.document_type field.label %}
+            {% if field.field.required %}
+                <span class="asteriskField">*</span>
+            {% endif %}
+        </h4> 
+        <div class="input">
+            {{ field }}
+            {% if field.errors %}
+                <label class="text-danger">
+                    {% for error in field.errors %}
+                        {{ error }}
+                    {% endfor %}
+                </label>
+            {% endif %}
+        </div>
+    {% endifnotequal %}
+</div>
+{% endif %}

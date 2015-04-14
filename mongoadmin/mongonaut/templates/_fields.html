@@ -1,0 +1,11 @@
+{% load i18n %}
+{{ media }}
+<form class="form-inline" role="form" action="" method="get" >
+{% for field in fields %}
+    <div class="form-group">
+      <a>{{ field.help_text|safe }}:  </a>
+      {{ field }}
+   </div>
+{% endfor %}
+<input type="submit" class="btn btn-primary" value="搜索">
+</form>

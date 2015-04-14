@@ -1,0 +1,22 @@
+{% if request.user.is_staff %}    
+    <div class="span4">
+        <p>
+            <a id="action_delete" class="btn btn-danger" href="#"><i class="icon-trash icon-white"></i> Delete</a>
+        </p>
+    </div>
+    {% include "mongonaut/includes/_delete_warning.html" %}
+{% endif %}
+<script type="text/javascript">
+    $("#action_delete").click(function(){
+        $('.span4').hide();
+        $('#delete_warning').show();
+    });
+    $(".alert_close").click(function(){
+        $('.span4').show();
+        $('#delete_warning').hide();
+    });
+    $("#action_delete_ok").click(function(){
+        var form_ = $('#show_form');
+        form_.submit();
+    });
+</script>

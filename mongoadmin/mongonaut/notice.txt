@@ -1,0 +1,3 @@
+# -*- coding: utf-8 -*-
+
+1.对于MongoEngine中field, 如果unique=True, 则required也会等于True, __init__的时候没调用, 文档被import时就变为True,略诡异.

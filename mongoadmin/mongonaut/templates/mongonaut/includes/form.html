@@ -1,0 +1,26 @@
+<div class="row">
+    <div class="col-lg-6">
+        <form id="field_form" enctype="multipart/form-data" method="post" action="{{ form_action }}" accept-charset="utf-8">
+            {% csrf_token %}
+            <fieldset>
+                {% for field in form %}
+                    {% include "mongonaut/includes/_field.html" %}
+                {% endfor %}
+            </fieldset>
+            </br>
+            <div class="actions">
+                <input type="submit" name="action" class="btn btn-primary" value="保存">
+                <!-- 
+                <input type="submit" name="action" class="btn disabled" readonly value="Save and continue editing">
+                <input type="submit" name="action" class="btn disabled" readonly value="Save and add another"> 
+                -->
+                {% if document and has_delete_permission%}
+                <a href="#" id="action_delete" class="btn btn-danger">
+                  <i class="icon-trash icon-white"></i> 删除
+                </a>
+                {% endif %}
+            </div>
+            {% include "mongonaut/includes/_delete_warning.html" %}
+        </form>
+    </div>
+</div>

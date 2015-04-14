@@ -1,0 +1,146 @@
+{% extends "mongonaut/base.html" %}
+{% load url from future %}
+
+{% block content %}
+
+<h1 style="text-shadow:0 1px 1px #444;">{{ document_doc }}</h1>
+{% if has_filters %}
+        {% get_search_fields document search_data %}
+{% else %}
+{% if is_search %}
+    
+    <form id="search_form_id" action="" method="get" class="input-group custom-search-form">
+        <div class="row">
+            <div class="col-lg-10">
+                <input type="text" name="q" class="form-control" value="{{ search_str }}" placeholder="搜索...">
+                <select id="select_id" name="select" class="selectpicker" >
+                    {% for field in search_fields %}
+                        <option {% ifequal field search_type %} selected = true {% endifequal %} value="{{ field }}">
+                            {% get_document_key document field%}
+                        </option>
+                    {% endfor %}
+                </select>
+                <input type="submit" class="btn btn-primary" value="搜索">
+            </div>
+        </div>
+    </form>
+{% endif %}
+{% endif %}
+{% if has_add_permission %}
+    <p>
+        <a class="btn btn-primary" href="{% url "document_detail_add_form" app_label document_name %}">
+            <i class="icon-plus icon-white"></i> Add
+        </a>
+    </p>
+{% endif %}
+{% if request.user.is_superuser %}
+    <form action="" method="post" id="show_form">
+    {% csrf_token %}
+{% endif %}
+    <table class="table table-bordered table-striped table-hover">
+        <thead>
+            <tr>
+                {% if request.user.is_superuser %}<th><input type="checkbox" name="check_all" /></th>{% endif %}
+                {% for key in keys %}
+                    <th style="text-align: center;">{% get_document_key document key%}</th>
+                {% endfor %}
+                {% if has_edit_permission %}
+                    <th style="text-align: center;">操作</th>
+                {% endif %}
+            </tr>
+        </thead>
+        {% for obj in object_list %}
+            <tr>
+                {% if request.user.is_superuser %}<td><input type="checkbox" name="mongo_id" value="{{ obj.id }}" /></td>{% endif %}
+                {% for key in keys %}
+                    {% if key == 'id' %}
+                        <td style="text-align: center;"><a title="查看详情" href="{% url "document_detail" app_label document_name obj.id %}">{% add_two_numbers start_index forloop.parentloop.counter %}</a></td>                                
+                    {% else %}
+                        <td style="text-align: center;">{% get_document_value obj key %}</td>           
+                    {% endif %}
+                {% endfor %}
+                {% if has_edit_permission %}
+                    <td style="text-align: center;">
+						<a href="{% url "document_detail_edit_form" app_label document_name obj.id %}">编辑</a>
+						{% for operation in operations %}
+						<a href='#' onclick="on_click('{% url "document_operation" app_label document_name obj.id operation.func %}');return false;">{{ operation.text }}</a>
+						{% endfor %}
+					</td>
+                {% endif %}
+            </tr>
+        {% endfor %}
+    </table>
+{% if request.user.is_superuser %}
+    {% include "mongonaut/actions/action_buttons.html" %}
+{% endif %}
+</form>
+<p>
+    {% if has_previous_page %}
+        <a class="btn btn-primary" href="?page={{ previous_page_number }}&q={{ search_str }}&select={{ search_type }}">上一页</a>
+    {% endif %}
+    <a class="btn btn-primary">{{ page }} of {{ total_pages }}</a>
+    {% if has_next_page %}
+        <a class="btn btn-primary" href="?page={{ next_page_number }}&q={{ search_str }}&select={{ search_type }}">下一页</a>
+    {% endif %}
+    <a class="btn btn-link" >总计 {{ total_count }}</a>
+</p>
+<div id="loading"
+	style="position: fixed !important; position: fixed; display: none; top: 0; left: 0; height: 100%; width: 100%; z-index: 1000; background: #000 url({{STATIC_URL}}mongonaut/css/img/ajax-loader.gif) no-repeat center center; opacity: 0.6; filter: alpha(opacity = 60); font-size: 14px; line-height: 20px;"
+	onclick="javascript:turnoff('loading')">
+	<p id="loading-one"
+		style="color: #fff; position: absolute; top: 50%; left: 50%; margin: 20px 0 0 -50px; padding: 3px 10px;"
+		onclick="javascript:turnoff('loading')">
+		正在处理中...
+	</p>
+</div>
+{% endblock %}
+
+{% block extrajs %}
+<script type="text/javascript" src="{{ BOOSTRAP_SELECT_JS }}"></script>
+<script type="text/javascript">
+$(function() {
+    $('.selectpicker').selectpicker();
+    $('input[name="check_all"]').click ( function() {
+        if ($(this).is(":checked" )){
+            $('input[name="mongo_id"]').prop("checked", true);
+        }       
+        else
+         {
+            $('input[name="mongo_id"]').prop("checked", false);
+         }
+    });
+});
+
+$(document).ajaxStart(function(){
+    $('#loading').show();
+}).ajaxStop(function(){
+    $('#loading').hide();
+});
+ 
+function on_click(url){
+	$.ajax({
+		type : "get",
+		url : url,
+		timeout : 30000,
+		success : function(data){
+			if(data.status == true){
+				alert('操作成功')
+				var on_end = data.on_end;
+				if ( on_end != null){
+					if (on_end == "refresh"){
+						window.location.reload();
+					}else{
+						location.href = on_end;
+					}
+				}
+			}else{
+				alert('操作失败.')
+			}
+		},
+		error : function(data){
+			alert('请求错误,请稍后重试.')
+		}
+	});
+}
+</script>
+{% endblock %}

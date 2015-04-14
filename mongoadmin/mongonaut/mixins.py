@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import
 import logging
 
 from django.contrib import messages
@@ -19,7 +18,7 @@ from .exceptions import NoMongoAdminSpecified
 from .forms.forms import MongoModelForm
 from .forms.form_utils import has_digit, make_key
 from .utils import translate_value, trim_field_key
-from .views import AppListView, IndexView
+import views
 
 logger = logging.getLogger(__name__)
 
@@ -43,16 +42,19 @@ class MongonautViewMixin(object):
     @method_decorator(login_required)
     def dispatch(self, *args, **kwargs):
         """user-login, permission check."""
-        self.set_mongoadmin()
-        permission_name = self.get_permission()
-        if not self.check_permission(permission_name):
-            return HttpResponseForbidden("""you have no %s permission,
-                                        please contact adminstrator."""\
-                                         % ({'has_add_permission': u'add',
-                                             'has_delete_permission': u'delete',
-                                             'has_edit_permission': u'edit',
-                                             'has_view_permission': u'view'
-                                             }.get(permission_name)))
+
+        if not isinstance(self, views.IndexView):
+            self.set_mongoadmin()
+            permission_name = self.get_permission()
+            if not self.check_permission(permission_name):
+                return HttpResponseForbidden("""you have no %s permission,
+                                            please contact adminstrator."""\
+                                             % ({'has_add_permission': u'add',
+                                                 'has_delete_permission': u'delete',
+                                                 'has_edit_permission': u'edit',
+                                                 'has_view_permission': u'view'
+                                                 }.get(permission_name)))
+
         return super(MongonautViewMixin, self).dispatch(*args, **kwargs)
 
     def check_permission(self, permission_name):
@@ -66,7 +68,7 @@ class MongonautViewMixin(object):
 
     def render_to_response(self, context, **response_kwargs):
         # if it is IndexView or AppListView
-        if isinstance(self, AppListView) or isinstance(self, IndexView):
+        if isinstance(self, views.AppListView) or isinstance(self, views.IndexView):
             object_list = context.get('object_list', [])
             if not self.request.user.is_superuser:
                 # 清除用户没有权限的应用

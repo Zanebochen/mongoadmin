@@ -1,5 +1,5 @@
 from django import template
-template.add_to_builtins('mongonaut.templatetags.mongonaut_tags')
+template.base.add_to_builtins('mongonaut.templatetags.mongonaut_tags')
 
 __author__ = 'Zanebo Chen'
 

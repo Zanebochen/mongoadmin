@@ -1,6 +1,6 @@
 from mongoengine import connect
-from django.conf import settings
 from django.db.models.signals import post_syncdb
+from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import Permission
 

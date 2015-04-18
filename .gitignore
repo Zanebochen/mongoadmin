@@ -3,9 +3,10 @@
 *.log
 *.db
 /.project
-/*.pydevproject
 /collect_static/
 /logs/*
 *.sqlite3
 /media
-/.settings
+/mongoadmin/mongoadmin/settings/secrets.json
+/mongoadmin/*.pydevproject
+/mongoadmin/.settings

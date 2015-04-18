@@ -8,22 +8,56 @@ https://docs.djangoproject.com/en/1.6/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.6/ref/settings/
 """
-
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-import os
-BASE_DIR = os.path.dirname(os.path.dirname(__file__))
+from os.path import abspath, basename, dirname, join, normpath, exists
+from os import makedirs
+from sys import path
+
+import json
+from django.core.exceptions import ImproperlyConfigured
+
+SETTING_DIR = dirname(abspath(__file__))
+BASE_DIR = dirname(SETTING_DIR)
+
+path.append(BASE_DIR)
+
+SITE_ROOT = dirname(BASE_DIR)
+
+SITE_NAME = basename(BASE_DIR)
+
+with open(join(SETTING_DIR, "secrets.json")) as f:
+    secrets = json.loads(f.read())
+
+
+def get_variable(var_name):
+    """Get the variable from json file, or return excetpion"""
+    try:
+        return secrets[var_name]
+    except KeyError:
+        error_msg = "Set the {0} variabel error.".format(var_name)
+        raise ImproperlyConfigured(error_msg)
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.6/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '1lov87-7#&=z2t83*+3bdds9oykr1%^heb_q^ij67i$lap*(nv'
+SECRET_KEY = get_variable('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-TEMPLATE_DEBUG = True
+TEMPLATE_DEBUG = DEBUG
+
+########## MANAGER CONFIGURATION
+# See: https://docs.djangoproject.com/en/dev/ref/settings/#admins
+ADMINS = (
+    ('admin', 'admin@126.com'),
+)
+
+# See: https://docs.djangoproject.com/en/dev/ref/settings/#managers
+MANAGERS = ADMINS
+########## END MANAGER CONFIGURATION
 
 ALLOWED_HOSTS = []
 
@@ -70,16 +104,8 @@ WSGI_APPLICATION = 'mongoadmin.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'NAME': normpath(join(SITE_ROOT, 'db.sqlite3')),
     }
-}
-
-
-# MongoDB Config
-MONGODB_DATABASE = {
-    "host": "127.0.0.1",
-    "port": 27017,
-    "db": "mongonaut",
 }
 
 
@@ -107,7 +133,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.6/howto/static-files/
 
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATIC_ROOT = normpath(join(SITE_ROOT, 'static'))
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder'
@@ -117,13 +143,13 @@ STATICFILES_DIRS = (
     # Put strings here, like "/home/html/static" or "C:/www/django/static".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
-    ("css", os.path.join(STATIC_ROOT, 'css')),
-    ("js", os.path.join(STATIC_ROOT, 'js')),
-    ("assets", os.path.join(STATIC_ROOT, 'assets')),
+    ("css", join(STATIC_ROOT, 'css')),
+    ("js", join(STATIC_ROOT, 'js')),
+    ("assets", join(STATIC_ROOT, 'assets')),
 )
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_ROOT = join(SITE_ROOT, 'media')
 
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
@@ -133,12 +159,12 @@ TEMPLATE_LOADERS = (
 )
 
 TEMPLATE_DIRS = (
-    os.path.join(BASE_DIR, 'templates'),
+    join(SITE_ROOT, 'templates'),
 )
 
-log_path = os.path.join(BASE_DIR, 'logs')
-if not os.path.exists(log_path):
-    os.makedirs(log_path)
+log_path = join(SITE_ROOT, 'logs')
+if not exists(log_path):
+    makedirs(log_path)
 
 # Logger
 LOGGING = {
@@ -161,7 +187,7 @@ LOGGING = {
         'default': {
             'level': 'INFO',
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': os.path.join(log_path, 'all.log'),
+            'filename': join(log_path, 'all.log'),
             'maxBytes': 1024 * 1024 * 5,  # 5 MB
             'backupCount': 5,
             'formatter': 'standard',
@@ -174,7 +200,7 @@ LOGGING = {
         'error_handler': {
             'level': 'ERROR',
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': os.path.join(log_path, 'error.log'),
+            'filename': join(log_path, 'error.log'),
             'maxBytes': 1024 * 1024 * 5,
             'backupCount': 5,
             'formatter': 'standard',

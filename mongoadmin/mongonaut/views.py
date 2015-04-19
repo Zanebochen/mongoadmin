@@ -1,14 +1,11 @@
 # -*- coding: utf-8 -*-
-"""
-TODO move permission checks to the dispatch view thingee
-"""
 from __future__ import absolute_import
 
 from django.contrib import messages
 from django.core.urlresolvers import reverse
 from django.forms import Form
 from django.views.generic.edit import DeletionMixin, FormView
-from django.views.generic import ListView, TemplateView
+from django.views.generic import TemplateView
 from django.core.exceptions import ValidationError as django_ValidationError
 
 from mongoengine.django.shortcuts import get_document_or_404
@@ -17,7 +14,7 @@ from mongoengine.errors import ValidationError as mongo_ValidationError
 
 from .conf import settings
 from .forms.forms import MongoModelForm
-from .mixins import MongonautFormViewMixin, MongonautViewMixin
+from .mixins import MongonautFormViewMixin, MongonautViewMixin, MongonautNavigationMixin
 from .utils import (log_addition, log_change, log_deletion,
                     is_valid_object_id, get_from_change_data)
 
@@ -29,20 +26,11 @@ def get_first_line_doc(content):
     return content.split('\n')[0] if content else ''
 
 
-class IndexView(MongonautViewMixin, ListView):
-
+class IndexView(MongonautNavigationMixin, TemplateView):
     template_name = "mongonaut/index.html"
-    queryset = []
-    permission = 'has_view_permission'
 
     def get_queryset(self):
         return self.get_mongoadmins()
-
-
-class AppListView(MongonautViewMixin, ListView):
-    """ :args: <app_label> """
-
-    template_name = "mongonaut/app_list.html"
 
 
 class DocumentListView(MongonautViewMixin, TemplateView):
@@ -175,8 +163,6 @@ class DocumentListView(MongonautViewMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super(DocumentListView, self).get_context_data(**kwargs)
 
-        context = self.set_permissions_in_context(context)
-
         context['object_list'] = self.get_queryset()
 
         context['document'] = self.document
@@ -260,19 +246,6 @@ class DocumentListView(MongonautViewMixin, TemplateView):
 
         return context
 
-#     def post(self, request, *args, **kwargs):
-#         # TODO - make sure to check the rights of the poster
-#         #self.get_queryset() # TODO - write something that grabs the document class better
-#         form_class = self.get_form_class()
-#         form = self.get_form(form_class)
-#         mongo_ids = self.get_initial()['mongo_id']
-#         for form_mongo_id in form.data.getlist('mongo_id'):
-#             for mongo_id in mongo_ids:
-#                 if form_mongo_id == mongo_id:
-#                     self.document.objects.get(pk=mongo_id).delete()
-# 
-#         return self.form_invalid(form)
-
     def get_all_mongo_ids(self):
         self.query = self.get_queryset()
         mongo_ids = [unicode(x.id) for x in self.query]
@@ -295,7 +268,6 @@ class DocumentDetailView(MongonautViewMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super(DocumentDetailView, self).get_context_data(**kwargs)
-        context = self.set_permissions_in_context(context)
         self.document_type = getattr(self.models, self.document_name)
         self.ident = self.kwargs.get('id')
         self.document = get_document_or_404(self.document_type.objects, pk=self.ident)
@@ -328,7 +300,7 @@ class DocumentDetailView(MongonautViewMixin, TemplateView):
         return context
 
 
-class DocumentEditFormView(MongonautViewMixin, FormView, MongonautFormViewMixin):
+class DocumentEditFormView(MongonautViewMixin, MongonautFormViewMixin, FormView):
     """ :args: <app_label> <document_name> <id> """
 
     template_name = "mongonaut/document_edit_form.html"
@@ -347,7 +319,6 @@ class DocumentEditFormView(MongonautViewMixin, FormView, MongonautFormViewMixin)
 
     def get_context_data(self, **kwargs):
         context = super(DocumentEditFormView, self).get_context_data(**kwargs)
-        context = self.set_permissions_in_context(context)
         self.document_type = getattr(self.models, self.document_name)
 
         # Jquery validation js CDN_URL
@@ -379,7 +350,7 @@ class DocumentEditFormView(MongonautViewMixin, FormView, MongonautFormViewMixin)
         return self.form
 
 
-class DocumentAddFormView(MongonautViewMixin, FormView, MongonautFormViewMixin):
+class DocumentAddFormView(MongonautViewMixin, MongonautFormViewMixin, FormView):
     """ :args: <app_label> <document_name> <id> """
 
     template_name = "mongonaut/document_add_form.html"
@@ -398,7 +369,6 @@ class DocumentAddFormView(MongonautViewMixin, FormView, MongonautFormViewMixin):
         """
         context = super(DocumentAddFormView, self).get_context_data(**kwargs)
 
-        context = self.set_permissions_in_context(context)
         self.document_type = getattr(self.models, self.document_name)
 
         # Jquery validation js CDN_URL
@@ -453,6 +423,7 @@ import json
 @require_GET
 def DocumentOperation(request, app_label, document_name, id, func_name):
     """trigger the operation that the models defined.
+    TODO: Should be implement by CBV rather than FBV.
     @return:
         - status, boolean: whether the operation is done normally.
         - on_end, str or None: decide how to do when it is done.

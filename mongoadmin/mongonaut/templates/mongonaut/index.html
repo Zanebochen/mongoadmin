@@ -8,30 +8,30 @@
 
 <div class="row">
     <div class="span12">
-{% for app in request.session.navigation_list %}
-    {% if forloop.counter <= 3 %}
-    <!-- only three app will be shown in index.html -->
-    <table class="table table-bordered table-striped">
-        <thead>
-            <tr>
-                <th colspan=3>{{ app.app_plural }}</th>
-            </tr>
-        </thead>
-        
-        <tbody>
-        {% for model in app.models %}
-            <tr>
-                <td><a href="{% url "document_list" app.app_name model.name %}">{{ model.plural }}</a></td>
-                {% if request.user.is_superuser %}
-                    <td><a href="{% url "document_detail_add_form" app.app_name model.name %}">添加</a></td>
-                    <td><a href="{% url "document_list" app.app_name model.name %}">修改</a></td
-                {% endif %}
-            </tr>
-        {% endfor %}
-        </tbody>        
-    </table>
-    {% endif %}
-{% endfor %}
+    {% for app in request.session.navigation_list %}
+        {% if forloop.counter <= 3 %}
+        <!-- only three app will be shown in index.html -->
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th colspan=3>{{ app.app_plural }}</th>
+                </tr>
+            </thead>
+
+            <tbody>
+            {% for model in app.models %}
+                <tr>
+                    <td><a href="{% url "document_list" app.app_name model.name %}">{{ model.plural }}</a></td>
+                    {% if request.user.is_superuser %}
+                        <td><a href="{% url "document_detail_add_form" app.app_name model.name %}">添加</a></td>
+                        <td><a href="{% url "document_list" app.app_name model.name %}">修改</a></td
+                    {% endif %}
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+    {% endfor %}
     </div>
 </div>
 {% endblock %}

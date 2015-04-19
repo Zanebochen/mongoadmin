@@ -7,6 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.forms import FileField
 from django.http import HttpResponseForbidden
 from django.utils.importlib import import_module
+from django.utils.functional import cached_property
 from django.utils.decorators import method_decorator
 from django import http
 
@@ -18,7 +19,7 @@ from .exceptions import NoMongoAdminSpecified
 from .forms.forms import MongoModelForm
 from .forms.form_utils import has_digit, make_key
 from .utils import translate_value, trim_field_key
-import views
+
 
 logger = logging.getLogger(__name__)
 
@@ -37,102 +38,21 @@ class AppStore(object):
         self.models.append(model)
 
 
-class MongonautViewMixin(object):
+class MongonautBaseViewMixin(object):
 
     @method_decorator(login_required)
     def dispatch(self, *args, **kwargs):
-        """user-login, permission check."""
+        """user-login, or permission check."""
+        return self.permission_passes(*args, **kwargs) or\
+            super(MongonautBaseViewMixin, self).dispatch(*args, **kwargs)
 
-        if not isinstance(self, views.IndexView):
-            self.set_mongoadmin()
-            permission_name = self.get_permission()
-            if not self.check_permission(permission_name):
-                return HttpResponseForbidden("""you have no %s permission,
-                                            please contact adminstrator."""\
-                                             % ({'has_add_permission': u'add',
-                                                 'has_delete_permission': u'delete',
-                                                 'has_edit_permission': u'edit',
-                                                 'has_view_permission': u'view'
-                                                 }.get(permission_name)))
-
-        return super(MongonautViewMixin, self).dispatch(*args, **kwargs)
-
-    def check_permission(self, permission_name):
-        """set permission for user."""
-        self.set_permissions_in_context()
-        return self.permission_context[permission_name]
-
-    def get_permission(self):
-        """get permission name for request."""
-        return self.permission
-
-    def render_to_response(self, context, **response_kwargs):
-        # if it is IndexView or AppListView
-        if isinstance(self, views.AppListView) or isinstance(self, views.IndexView):
-            object_list = context.get('object_list', [])
-            if not self.request.user.is_superuser:
-                # 清除用户没有权限的应用
-                app_names = [appstore.get('app_name', '') for appstore in object_list]
-                to_be_remove = []
-                for app_name in app_names:
-                    if not self.request.user.has_module_perms(app_name):
-                        to_be_remove.append(app_name)
-
-                if to_be_remove:
-                    if app_names == to_be_remove:
-                        # if user has no perms.
-                        return HttpResponseForbidden(u"抱歉,你没有权限浏览此内容,请联系管理员.")
-
-                    object_list = [appstore for appstore in object_list\
-                                   if appstore.get('app_name', '') not in to_be_remove]
-
-                # 清除用户没有权限的集合
-                user_all_perms = self.request.user.get_all_permissions()
-                all_perms_set = set()
-                for perms in user_all_perms:
-                    all_perms_set.add(perms.split('_')[-1])
-                for appstore in object_list:
-                    appstore['obj'].models = [model for model in appstore['obj'].models \
-                                           if model.mongoadmin.sql_object.lower() in all_perms_set]
-            else:
-                # 超级管理员不作处理
-                pass
-
-            navigation_list = []
-            for appstore in object_list:
-                if appstore['obj'].models:
-                    # 制作导航栏
-                    navigation_models = []
-                    for model in appstore['obj'].models:
-                        doc = model.__doc__
-                        plural_name = doc.split('\n')[0] if doc else model.name
-                        show_model = {
-                            'name': model.name,
-                            'plural': plural_name,
-                        }
-                        # 导航栏只需model名
-                        navigation_models.append(show_model)
-                    navigation_models.sort(key=lambda model: model['plural'])
-                    app_name = appstore.get('app_name', '')
-                    navigation_app = {
-                        'app_name': app_name,
-                        'app_plural': settings.MONGONAUT_APP_TABLE.get(app_name, app_name),
-                        'models': navigation_models
-                    }
-                    navigation_list.append(navigation_app)
-            # 导航栏放session中
-            navigation_list.sort(key=lambda app: app['app_plural'])
-            self.request.session['navigation_list'] = navigation_list
-
-        return self.response_class(
-            request=self.request,
-            template=self.get_template_names(),
-            context=context,
-            **response_kwargs
-        )
+    def permission_passes(self, *args, **kwargs):
+        """Check permission if necessary."""
+        pass
 
     def get_context_data(self, **kwargs):
-        context = super(MongonautViewMixin, self).get_context_data(**kwargs)
+        """Some basic config for template."""
+        context = super(MongonautBaseViewMixin, self).get_context_data(**kwargs)
         context['METISMENU_CSS'] = settings.MONGONAUT_METISMENU_CSS
         context['BOOSTRAP_SELECT_CSS'] = settings.MONGONAUT_BOOSTRAP_SELECT_CSS
         context['FONT_AWESOME'] = settings.MONGONAUT_FONT_AWESOME
@@ -159,6 +79,35 @@ class MongonautViewMixin(object):
                 obj=app_store
             ))
         return apps
+
+
+class MongonautViewMixin(MongonautBaseViewMixin):
+
+    def permission_passes(self, *args, **kwargs):
+        self.set_mongoadmin()
+        permission_name = self.get_permission()
+        if not self.check_permission(permission_name):
+            return HttpResponseForbidden("""you have no %s permission,
+                                        please contact adminstrator."""\
+                                         % ({'has_add_permission': u'add',
+                                             'has_delete_permission': u'delete',
+                                             'has_edit_permission': u'edit',
+                                             'has_view_permission': u'view'
+                                             }.get(permission_name)))
+
+    def check_permission(self, permission_name):
+        """check user's permission."""
+        return self.permission_context[permission_name]
+
+    def get_permission(self):
+        """get permission name for request."""
+        return self.permission
+
+    def get_context_data(self, **kwargs):
+        """Set permission"""
+        context = super(MongonautViewMixin, self).get_context_data(**kwargs)
+        context.update(self.permission_context)
+        return context
 
     def set_mongonaut_base(self):
         """ Sets a number of commonly used attributes """
@@ -199,32 +148,99 @@ class MongonautViewMixin(object):
         else:
             raise NoMongoAdminSpecified("No MongoAdmin for {0}.{1}".format(self.app_label, self.document_name))
 
-    def set_permissions_in_context(self, context={}):
+    @cached_property
+    def permission_context(self):
         """ Provides permissions for mongoadmin for use in the context"""
-        if not hasattr(self, 'permission_context'):
-            if not self.request.user.is_authenticated() or not self.request.user.is_active:
-                self.permission_context = {
-                    'has_edit_permission': False,
-                    'has_add_permission': False,
-                    'has_delete_permission': False,
-                    'has_view_permission': False
-                }
-            else:
-                edit_permission = self.mongoadmin.has_edit_permission(self.request, self.app_label)
-                add_permission = self.mongoadmin.has_add_permission(self.request, self.app_label)
-                delete_permission = self.mongoadmin.has_delete_permission(self.request, self.app_label)
-                self.permission_context = {
-                    'has_edit_permission': edit_permission,
-                    'has_add_permission': add_permission,
-                    'has_delete_permission': delete_permission
-                }
-                can_view = edit_permission or add_permission or delete_permission
-                if not can_view:
-                    can_view = self.mongoadmin.has_view_permission(self.request, self.app_label)
-                self.permission_context['has_view_permission'] = can_view
+        if not self.request.user.is_authenticated() or not self.request.user.is_active:
+            permission_context = {
+                'has_edit_permission': False,
+                'has_add_permission': False,
+                'has_delete_permission': False,
+                'has_view_permission': False
+            }
+        else:
+            edit_permission = self.mongoadmin.has_edit_permission(self.request, self.app_label)
+            add_permission = self.mongoadmin.has_add_permission(self.request, self.app_label)
+            delete_permission = self.mongoadmin.has_delete_permission(self.request, self.app_label)
+            permission_context = {
+                'has_edit_permission': edit_permission,
+                'has_add_permission': add_permission,
+                'has_delete_permission': delete_permission
+            }
+            can_view = edit_permission or add_permission or delete_permission
+            if not can_view:
+                can_view = self.mongoadmin.has_view_permission(self.request, self.app_label)
+            permission_context['has_view_permission'] = can_view
 
-        context.update(self.permission_context)
-        return context
+        return permission_context
+
+
+class MongonautNavigationMixin(MongonautBaseViewMixin):
+
+    def render_to_response(self, context, **response_kwargs):
+        """Override render_to_response for navigation generation.
+        TODO: recode navigation. This version is unsatisfactory.
+        """
+        object_list = self.get_queryset()
+        if not self.request.user.is_superuser:
+            # 清除用户没有权限的应用
+            app_names = [appstore.get('app_name', '') for appstore in object_list]
+            to_be_remove = []
+            for app_name in app_names:
+                if not self.request.user.has_module_perms(app_name):
+                    to_be_remove.append(app_name)
+
+            if to_be_remove:
+                object_list = [appstore for appstore in object_list\
+                               if appstore.get('app_name', '') not in to_be_remove]
+
+                if not object_list:
+                    # if user has no perms.
+                    return HttpResponseForbidden(u"抱歉,你没有权限浏览此内容,请联系管理员.")
+
+            # 清除用户没有权限的集合
+            user_all_perms = self.request.user.get_all_permissions()
+            all_perms_set = set()
+            for perms in user_all_perms:
+                all_perms_set.add(perms.split('_')[-1])
+            for appstore in object_list:
+                appstore['obj'].models = [model for model in appstore['obj'].models \
+                                       if model.mongoadmin.sql_object.lower() in all_perms_set]
+        else:
+            # 超级管理员不作处理
+            pass
+
+        self.request.session['navigation_list'] = self.generate_navigation(object_list)
+
+        return super(MongonautNavigationMixin,
+                     self).render_to_response(context, **response_kwargs)
+
+    def generate_navigation(self, object_list):
+        navigation_list = []
+        for appstore in object_list:
+            if appstore['obj'].models:
+                # 制作导航栏
+                navigation_models = []
+                for model in appstore['obj'].models:
+                    doc = model.__doc__
+                    plural_name = doc.split('\n')[0] if doc else model.name
+                    show_model = {
+                        'name': model.name,
+                        'plural': plural_name,
+                    }
+                    # 导航栏只需model名
+                    navigation_models.append(show_model)
+                navigation_models.sort(key=lambda model: model['plural'])
+                app_name = appstore.get('app_name', '')
+                navigation_app = {
+                    'app_name': app_name,
+                    'app_plural': settings.MONGONAUT_APP_TABLE.get(app_name, app_name),
+                    'models': navigation_models
+                }
+                navigation_list.append(navigation_app)
+        # 导航栏放session中
+        navigation_list.sort(key=lambda app: app['app_plural'])
+        return navigation_list
 
 
 class MongonautFormViewMixin(object):

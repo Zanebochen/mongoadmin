@@ -1,6 +1,5 @@
 {% extends "mongonaut/base.html" %}
 {% load url from future %}
-{% load mongonaut_tags %}
 
 {% block breadcrumbs %}
 <li><a href="{% url "index" %}">Mongonaut</a> <span class="divider">/</span></li>
@@ -8,7 +7,7 @@
 <li><a href="{% url "document_detail" app_label document_name document.id %}">{{ document_name }}</a> <a href="{% url "document_detail" app_label document_name document.id %}">{{ document.id }}</a> <span class="divider">/</span></li>
 <li style="display: inline; float: right"><a href="/logout/" class="active">退出系统</a></li>
 <li><a href="">Delete</a>
-{% endblock %}
+{% endblock breadcrumbs %}
 
 {% block content %}
 
@@ -26,4 +25,4 @@
     </div>
 </div>    
 
-{% endblock %}
+{% endblock content %}

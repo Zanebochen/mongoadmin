@@ -4,7 +4,7 @@
 
 {% block breadcrumbs %}
 <a class="btn btn-primary btn-sm" href="{% url "document_list" app_label document_name%}">返回列表</a>
-{% endblock %}
+{% endblock breadcrumbs %}
 
 {% block content %}
 
@@ -95,11 +95,11 @@
     </div>
 </div>    
 
-{% endblock %}
+{% endblock content %}
 
 {% block extrajs %}
 <form method="post" id="delete_form" action="{% url "document_delete" app_label document_name document.id %}">
 {% csrf_token %}
 </form>
-{% endblock %}
+{% endblock extrajs %}
 

@@ -11,6 +11,8 @@ DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 ########## END DEBUG CONFIGURATION
 
+# When template fail, this will show more verbose error.
+TEMPLATE_STRING_IF_INVALID = "INVALID EXPRESSION: %s"
 
 ########## EMAIL CONFIGURATION
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#email-backend

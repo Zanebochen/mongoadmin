@@ -1,5 +1,7 @@
 {% extends "mongonaut/base.html" %}
 {% load url from future %}
+{% load mongonaut_tags %}
+{% load filter_tags %}
 
 {% block content %}
 
@@ -54,18 +56,22 @@
                 {% if request.user.is_superuser %}<td><input type="checkbox" name="mongo_id" value="{{ obj.id }}" /></td>{% endif %}
                 {% for key in keys %}
                     {% if key == 'id' %}
-                        <td style="text-align: center;"><a title="查看详情" href="{% url "document_detail" app_label document_name obj.id %}">{% add_two_numbers start_index forloop.parentloop.counter %}</a></td>                                
+                        <td style="text-align: center;">
+                        <a title="查看详情" href="{% url "document_detail" app_label document_name obj.id %}">
+                        {{ start_index|add:forloop.parentloop.counter }}
+                        </a>
+                        </td>
                     {% else %}
-                        <td style="text-align: center;">{% get_document_value obj key %}</td>           
+                        <td style="text-align: center;">{% get_document_value obj key %}</td>
                     {% endif %}
                 {% endfor %}
                 {% if has_edit_permission %}
                     <td style="text-align: center;">
-						<a href="{% url "document_detail_edit_form" app_label document_name obj.id %}">编辑</a>
-						{% for operation in operations %}
-						<a href='#' onclick="on_click('{% url "document_operation" app_label document_name obj.id operation.func %}');return false;">{{ operation.text }}</a>
-						{% endfor %}
-					</td>
+                        <a href="{% url "document_detail_edit_form" app_label document_name obj.id %}">编辑</a>
+                        {% for operation in operations %}
+                        <a href='#' onclick="on_click('{% url "document_operation" app_label document_name obj.id operation.func %}');return false;">{{ operation.text }}</a>
+                        {% endfor %}
+                    </td>
                 {% endif %}
             </tr>
         {% endfor %}
@@ -85,15 +91,15 @@
     <a class="btn btn-link" >总计 {{ total_count }}</a>
 </p>
 <div id="loading"
-	style="position: fixed !important; position: fixed; display: none; top: 0; left: 0; height: 100%; width: 100%; z-index: 1000; background: #000 url({{STATIC_URL}}mongonaut/css/img/ajax-loader.gif) no-repeat center center; opacity: 0.6; filter: alpha(opacity = 60); font-size: 14px; line-height: 20px;"
-	onclick="javascript:turnoff('loading')">
-	<p id="loading-one"
-		style="color: #fff; position: absolute; top: 50%; left: 50%; margin: 20px 0 0 -50px; padding: 3px 10px;"
-		onclick="javascript:turnoff('loading')">
-		正在处理中...
-	</p>
+    style="position: fixed !important; position: fixed; display: none; top: 0; left: 0; height: 100%; width: 100%; z-index: 1000; background: #000 url({{STATIC_URL}}mongonaut/css/img/ajax-loader.gif) no-repeat center center; opacity: 0.6; filter: alpha(opacity = 60); font-size: 14px; line-height: 20px;"
+    onclick="javascript:turnoff('loading')">
+    <p id="loading-one"
+        style="color: #fff; position: absolute; top: 50%; left: 50%; margin: 20px 0 0 -50px; padding: 3px 10px;"
+        onclick="javascript:turnoff('loading')">
+        正在处理中...
+    </p>
 </div>
-{% endblock %}
+{% endblock content %}
 
 {% block extrajs %}
 <script type="text/javascript" src="{{ BOOSTRAP_SELECT_JS }}"></script>
@@ -118,29 +124,29 @@ $(document).ajaxStart(function(){
 });
  
 function on_click(url){
-	$.ajax({
-		type : "get",
-		url : url,
-		timeout : 30000,
-		success : function(data){
-			if(data.status == true){
-				alert('操作成功')
-				var on_end = data.on_end;
-				if ( on_end != null){
-					if (on_end == "refresh"){
-						window.location.reload();
-					}else{
-						location.href = on_end;
-					}
-				}
-			}else{
-				alert('操作失败.')
-			}
-		},
-		error : function(data){
-			alert('请求错误,请稍后重试.')
-		}
-	});
+    $.ajax({
+        type : "get",
+        url : url,
+        timeout : 30000,
+        success : function(data){
+            if(data.status == true){
+                alert('操作成功')
+                var on_end = data.on_end;
+                if ( on_end != null){
+                    if (on_end == "refresh"){
+                        window.location.reload();
+                    }else{
+                        location.href = on_end;
+                    }
+                }
+            }else{
+                alert('操作失败.')
+            }
+        },
+        error : function(data){
+            alert('请求错误,请稍后重试.')
+        }
+    });
 }
 </script>
-{% endblock %}
+{% endblock extrajs %}

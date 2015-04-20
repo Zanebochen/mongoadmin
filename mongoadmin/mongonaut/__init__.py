@@ -1,6 +1,3 @@
-from django import template
-template.base.add_to_builtins('mongonaut.templatetags.mongonaut_tags')
-
 __author__ = 'Zanebo Chen'
 
 VERSION = (0, 0, 3)

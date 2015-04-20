@@ -84,7 +84,7 @@ def get_document_value(document, key):
     if isinstance(value, basestring) and len(value) > 20:
         shorten_value = value[0:12] + "..."
         return mark_safe("""<p title="{0}" >{1}</p>""".format(value.encode('utf-8'),
-                                                               shorten_value.encode('utf-8')))
+                                                              shorten_value.encode('utf-8')))
     return value
 
 
@@ -110,21 +110,3 @@ def get_document_key(document, key):
     # 默认配置
     value = settings.MONGONAUT_FIELD_TABLE.get(key, key)
     return value
-
-
-@register.simple_tag()
-def add_two_numbers(number1, number2):
-    '''
-    User-defined adding cause template do not support adding.
-    '''
-    return number1 + number2
-
-
-@register.simple_tag()
-def get_operation_url(app_label, document_name, obj, operation_text):
-    generate_url_func = obj.mongoadmin.operations.get(operation_text, None)
-    if generate_url_func:
-        url = generate_url_func(app_label, document_name, obj)
-    else:
-        url = ""
-    return url

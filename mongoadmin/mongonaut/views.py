@@ -401,6 +401,7 @@ class DocumentDeleteView(DeletionMixin, MongonautViewMixin, TemplateView):
 
     success_url = "/"
     template_name = "mongonaut/document_delete.html"
+    permission = 'has_delete_permission'
 
     def get_success_url(self):
         log_deletion(self.request, self.object, self.app_label)

@@ -2,11 +2,10 @@
 *.swp
 *.log
 *.db
-/.project
-/collect_static/
-/logs/*
 *.sqlite3
-/media
 /mongoadmin/mongoadmin/settings/secrets.json
 /mongoadmin/*.pydevproject
 /mongoadmin/.settings
+/mongoadmin/media
+/mongoadmin/logs
+/mongoadmin/.project

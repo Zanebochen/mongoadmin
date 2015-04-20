@@ -119,7 +119,7 @@
             <div class="container-fluid">
                 </br>
                 {% block breadcrumbs %}
-                {% endblock %}
+                {% endblock breadcrumbs %}
                 {% if messages %}
                     </br>
                     </br>
@@ -131,7 +131,7 @@
                 {% endfor %}
                 {% endif %}
             {% block content %}
-            {% endblock %}
+            {% endblock content %}
             </div>
             <!-- /.row -->
         </div>
@@ -140,7 +140,7 @@
     </div>
 
     {% block extrajs %}
-    {% endblock %}
+    {% endblock extrajs %}
 
     <script type="text/javascript">
         $("#action_delete").click(function(){
@@ -159,7 +159,7 @@
     <script type="text/javascript">
         //<![CDATA[
         {% block inlinejs %}
-        {% endblock %}
+        {% endblock inlinejs %}
         //]]>
     </script>
     </body>

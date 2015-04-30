@@ -2,10 +2,9 @@
 import logging
 
 from django.contrib import messages
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, PermissionDenied
 from django.contrib.auth.decorators import login_required
 from django.forms import FileField
-from django.http import HttpResponseForbidden
 from django.utils.importlib import import_module
 from django.utils.functional import cached_property
 from django.utils.decorators import method_decorator
@@ -87,13 +86,13 @@ class MongonautViewMixin(MongonautBaseViewMixin):
         self.set_mongoadmin()
         permission_name = self.get_permission()
         if not self.check_permission(permission_name):
-            return HttpResponseForbidden("""you have no %s permission,
-                                        please contact adminstrator."""\
-                                         % ({'has_add_permission': u'add',
-                                             'has_delete_permission': u'delete',
-                                             'has_edit_permission': u'edit',
-                                             'has_view_permission': u'view'
-                                             }.get(permission_name)))
+            raise PermissionDenied(
+            """you have no %s permission, please contact adminstrator."""\
+            % ({'has_add_permission': u'add',
+                'has_delete_permission': u'delete',
+                'has_edit_permission': u'edit',
+                'has_view_permission': u'view'
+            }.get(permission_name)))
 
     def check_permission(self, permission_name):
         """check user's permission."""

@@ -14,17 +14,9 @@ from django.utils.six.moves.urllib.parse import urljoin
 import dateutil.parser
 
 from mongoengine.base import ObjectIdField
-from mongoengine.fields import BooleanField
-from mongoengine.fields import DateTimeField
-from mongoengine.fields import EmbeddedDocumentField
-from mongoengine.fields import ListField
-from mongoengine.fields import ReferenceField
-from mongoengine.fields import FloatField
-from mongoengine.fields import EmailField
-from mongoengine.fields import DecimalField
-from mongoengine.fields import URLField
-from mongoengine.fields import IntField
-from mongoengine.fields import StringField
+from mongoengine.fields import (BooleanField, DateTimeField, EmbeddedDocumentField,
+                                ListField, ReferenceField, FloatField, EmailField,
+                                DecimalField, URLField, IntField, StringField)
 
 from mongonaut.conf import settings
 

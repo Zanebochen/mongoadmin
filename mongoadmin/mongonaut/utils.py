@@ -35,6 +35,10 @@ OPERATION = {
 LOG_EDIT_PATTERN = re.compile("[a-zA-Z]+:change")
 
 
+def get_first_line_doc(content):
+    return content.split('\n')[0] if content else ''
+
+
 def is_valid_object_id(value):
     try:
         OBJECT_ID.validate(value)
@@ -202,7 +206,7 @@ def get_last_editor(cls, app_label=""):
         caller_frame = frame.f_back
         caller_path = caller_frame.f_code.co_filename
         # 获取app_name
-        tail = caller_path[len(settings.BASE_DIR) + 1:]
+        tail = caller_path[len(settings.SITE_ROOT) + 1:]
         app_label = tail[: tail.find(os.path.sep)]
 
     last_editor = get_latest_log_by_object_id(app_label, cls, cls.id)
@@ -291,6 +295,8 @@ def auto_create_mysqlmodel_for_mongo(
     @params {int} auto_add_sql:
         1, 自动将调用者的命名空间中所有Document的子类都各生成一张mysql的表
         0, 调用者的命名空间中所有Document的子类，且该子类含有add2mysql=1属性时,才生成一张mysql表
+
+    TODO: When model has defined its own MysqlModel, then pass.
     """
 
     # 获得调用栈信息
@@ -299,7 +305,7 @@ def auto_create_mysqlmodel_for_mongo(
     local = caller_frame.f_locals
     caller_path = caller_frame.f_code.co_filename
     # 获取app_name
-    tail = caller_path[len(settings.BASE_DIR) + 1:]
+    tail = caller_path[len(settings.SITE_ROOT) + 1:]
     app_name = tail[: tail.find(os.path.sep)]
 
     document = [item[1] for item in local.items() if
@@ -312,7 +318,7 @@ def auto_create_mysqlmodel_for_mongo(
                     getattr(mongo, 'auto_add_sql', 0) is 1]
     for mongo in document:
         cls_name = sql_model_class_name.format(document_class=mongo.__name__)
-        verbose_name = sql_model_verbose_name or mongo.__doc__.split('\n')[0]
+        verbose_name = sql_model_verbose_name or get_first_line_doc(mongo.__doc__) or mongo.__name__
         # dynamic create django mysql model
         t = type(cls_name,
                  (Model,),

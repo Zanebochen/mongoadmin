@@ -3,8 +3,8 @@
 from django.forms import Form
 from django import forms
 from mongoengine.base import TopLevelDocumentMetaclass
-from mongoengine.fields import EmbeddedDocumentField
-from mongoengine.fields import ListField
+from mongoengine.fields import EmbeddedDocumentField, ListField
+from mongoengine import Document
 
 from .form_mixins import MongoModelFormBaseMixin
 from .form_utils import has_digit
@@ -93,18 +93,23 @@ class MongoModelForm(MongoModelFormBaseMixin, Form):
         if not isinstance(document, TopLevelDocumentMetaclass) and doc_key:
             doc_dict.update({"_field_type": EmbeddedDocumentField})
 
-        # 不在Add,Edit中显示,默认情况下在List下显示.
-        only_show_in_list = getattr(document, 'only_show_in_list', ())
-        # 在Edit界面只读, 在Add界面不显示.
-        show_in_edit = getattr(document.mongoadmin, 'show_in_edit', ())
-        # 与only_show_in_list相对的概念, 允许在Add, Edit界面中被编辑.
-        allowed_edit = getattr(document, 'allowed_edit', document._fields_ordered)
-        # 一定要有id, 否则无法修改数据.
-        if 'id' not in allowed_edit:
-            allowed_edit = ('id', ) + allowed_edit
+        if isinstance(document, Document):
+            # Note: 只有集合才能有此属性, 其余的如EmbeddedDocument没有这些属性.
+            # 不在Add,Edit中显示,默认情况下在List下显示.
+            only_show_in_list = getattr(document, 'only_show_in_list', ())
+            # 在Edit界面只读, 在Add界面不显示.
+            show_in_edit = getattr(document.mongoadmin, 'show_in_edit', ())
+            # 与only_show_in_list相对的概念, 允许在Add, Edit界面中被编辑.
+            allowed_edit = getattr(document, 'allowed_edit', document._fields_ordered)
+            # 一定要有id, 否则无法修改数据.
+            if 'id' not in allowed_edit:
+                allowed_edit = ('id', ) + allowed_edit
 
-        # 完全不在List,Add,Edit中显示, 在model中用作另外的用途.
-        fake_list = getattr(document, 'fake_list', ())
+            # 完全不在List,Add,Edit中显示, 在model中用作另外的用途.
+            fake_list = getattr(document, 'fake_list', ())
+        else:
+            only_show_in_list, fake_list, show_in_edit = (), (), ()
+            allowed_edit = document._fields_ordered
 
         for key in allowed_edit:
             if key in only_show_in_list or key in show_in_edit:

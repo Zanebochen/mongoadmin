@@ -223,13 +223,13 @@ def get_widget(model_field, disabled=False):
         return forms.Textarea(attrs=attrs)
 
     elif isinstance(model_field, DateTimeField):
-        return MongoSplitDateTime()
+        return MongoSplitDateTime(attrs={'class': ''})
 
     elif isinstance(model_field, BooleanField):
         return forms.CheckboxInput(attrs=attrs)
 
     elif isinstance(model_field, ReferenceField) or model_field.choices:
-        return MongoSelectWidget()
+        return MongoSelectWidget(attrs={'class': ''})
 
     elif isinstance(model_field, ListField) or isinstance(model_field,
                                                           EmbeddedDocumentField):

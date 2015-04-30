@@ -75,6 +75,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'mongonaut',
     'example',
+    'test_blog',
 )
 
 MIDDLEWARE_CLASSES = (

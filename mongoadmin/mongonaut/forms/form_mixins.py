@@ -211,9 +211,7 @@ class MongoModelFormBaseMixin(object):
         if getattr(model_field, 'widget', None):
             field_class = get_form_field_class_from_widget(model_field, widget)
         elif widget and isinstance(widget, MongoSelectWidget):
-            field_class = forms.ChoiceField(label=model_field.name,
-                                            required=model_field.required,
-                                            widget=widget)
+            field_class = forms.ChoiceField
         else:
             field_class = get_form_field_class(model_field)
 

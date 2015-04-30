@@ -15,15 +15,11 @@ from mongoengine.errors import ValidationError as mongo_ValidationError
 from .conf import settings
 from .forms.forms import MongoModelForm
 from .mixins import MongonautFormViewMixin, MongonautViewMixin, MongonautNavigationMixin
-from .utils import (log_addition, log_change, log_deletion,
+from .utils import (log_addition, log_change, log_deletion, get_first_line_doc,
                     is_valid_object_id, get_from_change_data)
 
 import logging
 logger = logging.getLogger(__name__)
-
-
-def get_first_line_doc(content):
-    return content.split('\n')[0] if content else ''
 
 
 class IndexView(MongonautNavigationMixin, TemplateView):
@@ -63,7 +59,7 @@ class DocumentListView(MongonautViewMixin, TemplateView):
         # search. move this to get_queryset
         self.search_str = self.request.GET.get('q')
         self.search_type = self.request.GET.get('select')
-        if hasattr(self.mongoadmin, "filterobject"):
+        if getattr(self.mongoadmin, "filterobject", None):
             queryset = self.get_filterset(self.request.GET)
             # ordering
             if self.mongoadmin.ordering:
@@ -232,7 +228,7 @@ class DocumentListView(MongonautViewMixin, TemplateView):
             operations = getattr(self.document, 'operations', {})
             context['operations'] = operations
 
-        if hasattr(self.mongoadmin, 'filterobject'):
+        if getattr(self.mongoadmin, 'filterobject', None):
             context['search_data'] = self.search_data
             context['has_filters'] = True
 

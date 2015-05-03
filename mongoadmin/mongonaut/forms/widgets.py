@@ -2,6 +2,7 @@
 
 """ Widgets for mongonaut forms"""
 import datetime
+from pytz import utc
 
 from django import forms
 from django.contrib.admin.templatetags.admin_static import static
@@ -168,9 +169,7 @@ class MongoAdminDateWidget(forms.DateInput):
         attrs = dict(self.attrs, **kwargs)
         if extra_attrs:
             extra_attrs = extra_attrs.copy()
-            attrs_class = extra_attrs.pop('class', None)
-            if attrs_class:
-                attrs['class'] = "{0} {1}".format(attrs['class'], attrs_class)
+            extra_attrs.pop('class', None)
             attrs.update(extra_attrs)
         return attrs
 
@@ -193,9 +192,7 @@ class MongoAdminTimeWidget(forms.TimeInput):
         attrs = dict(self.attrs, **kwargs)
         if extra_attrs:
             extra_attrs = extra_attrs.copy()
-            attrs_class = extra_attrs.pop('class', None)
-            if attrs_class:
-                attrs['class'] = "{0} {1}".format(attrs['class'], attrs_class)
+            extra_attrs.pop('class', None)
             attrs.update(extra_attrs)
         return attrs
 
@@ -206,10 +203,33 @@ class MongoSplitDateTime(forms.MultiWidget):
         widgets = [MongoAdminDateWidget, MongoAdminTimeWidget]
         super(MongoSplitDateTime, self).__init__(widgets, attrs)
 
-    def format_output(self, rendered_widgets):
-        return format_html('<p class="datetime">{0} {1}<br />{2} {3}</p>',
+    def render(self, name, value, attrs=None):
+        if self.is_localized:
+            for widget in self.widgets:
+                widget.is_localized = self.is_localized
+        # value is a list of values, each corresponding to a widget
+        # in self.widgets.
+        if not isinstance(value, list):
+            value = self.decompress(value)
+        output = []
+        final_attrs = self.build_attrs(attrs)
+        id_ = final_attrs.get('id', None)
+        for i, widget in enumerate(self.widgets):
+            try:
+                widget_value = value[i]
+            except IndexError:
+                widget_value = None
+            if id_:
+                final_attrs = dict(final_attrs, id='%s_%s' % (id_, i))
+            output.append(widget.render(name + '_%s' % i, widget_value, final_attrs))
+        return mark_safe(self.format_output(id_, output))
+
+    def format_output(self, id_, rendered_widgets):
+        """Add id, name, class for ListField and EmbeddedField."""
+        return format_html('<p class="datetime {4}" id="{5}" name="{5}">{0} {1}<br />{2} {3}</p>',
                            _('Date:'), rendered_widgets[0],
-                           _('Time:'), rendered_widgets[1])
+                           _('Time:'), rendered_widgets[1],
+                           self.attrs['class'], id_)
 
     def decompress(self, value):
         '''由于我们的MongoDB中集合里时间以String格式存储, 若用到时间控件则选进行格式转换.
@@ -222,7 +242,8 @@ class MongoSplitDateTime(forms.MultiWidget):
                     except Exception:
                         # 任意格式str转DateTime.
                         value = dateutil.parser.parse(value)
-                value = to_current_timezone(value)
+                # MongoDB中的DateTimeField转化成python格式时并没有带上timezone信息, 默认是UTC.
+                value = to_current_timezone(utc.localize(value))
                 return [value.date(), value.time().replace(microsecond=0)]
             except Exception:
                 pass

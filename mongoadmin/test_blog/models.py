@@ -27,7 +27,7 @@ class User(Document):
 class Comment(EmbeddedDocument):
     message = AdminStringField(default="DEFAULT EMBEDDED COMMENT")
     author = ReferenceField(User)
-    post_date = DateTimeField()
+#     post_date = DateTimeField()
 
     # ListField(EmbeddedDocumentField(ListField(Something)) is not currenlty supported.
     # UI, and lists with list inside them need to be fixed.  The extra numbers appened to
@@ -50,10 +50,10 @@ class EmbeddedUser(EmbeddedDocument):
 
 class Post(Document):
     # See Post.title.max_length to make validation better!
-    title = AdminStringField(max_length=120, required=True, unique=True)
+#     title = AdminStringField(max_length=120, required=True, unique=True)
 #     content = AdminStringField(default="I am default content")
 #     author = ReferenceField(User, required=True)
-    created_date = DateTimeField()
+#     created_date = DateTimeField()
 #     published = BooleanField()
 #     creator = EmbeddedDocumentField(EmbeddedUser)
     published_dates = ListField(DateTimeField())

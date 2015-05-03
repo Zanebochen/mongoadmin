@@ -14,7 +14,7 @@ from mongoengine.fields import ReferenceField
 from .form_utils import FieldTuple
 from .form_utils import has_digit
 from .form_utils import make_key
-from .widgets import get_form_field_class, get_form_field_class_from_widget, IntChoiceField, MongoSelectWidget
+from .widgets import get_form_field_class, get_form_field_class_from_widget, IntChoiceField
 from mongonaut.utils import trim_field_key
 
 
@@ -210,7 +210,7 @@ class MongoModelFormBaseMixin(object):
         # 优先widget匹配, 否则mongo field匹配.
         if getattr(model_field, 'widget', None):
             field_class = get_form_field_class_from_widget(model_field, widget)
-        elif widget and isinstance(widget, MongoSelectWidget):
+        elif widget and isinstance(widget, forms.Select):
             field_class = forms.ChoiceField
         else:
             field_class = get_form_field_class(model_field)

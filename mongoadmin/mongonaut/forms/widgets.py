@@ -4,13 +4,13 @@
 import datetime
 
 from django import forms
-from django.contrib.admin.widgets import AdminSplitDateTime
 from django.contrib.admin.templatetags.admin_static import static
 from django.utils.html import conditional_escape, format_html
 from django.utils.encoding import force_text, smart_text
 from django.utils.safestring import mark_safe
 from django.forms.util import to_current_timezone, flatatt
 from django.utils.six.moves.urllib.parse import urljoin
+from django.utils.translation import ugettext as _
 import dateutil.parser
 
 from mongoengine.base import ObjectIdField
@@ -163,6 +163,17 @@ class MongoAdminDateWidget(forms.DateInput):
             final_attrs.update(attrs)
         super(MongoAdminDateWidget, self).__init__(attrs=final_attrs, format=format)
 
+    def build_attrs(self, extra_attrs=None, **kwargs):
+        "Helper function for building an attribute dictionary."
+        attrs = dict(self.attrs, **kwargs)
+        if extra_attrs:
+            extra_attrs = extra_attrs.copy()
+            attrs_class = extra_attrs.pop('class', None)
+            if attrs_class:
+                attrs['class'] = "{0} {1}".format(attrs['class'], attrs_class)
+            attrs.update(extra_attrs)
+        return attrs
+
 
 class MongoAdminTimeWidget(forms.TimeInput):
 
@@ -177,14 +188,28 @@ class MongoAdminTimeWidget(forms.TimeInput):
             final_attrs.update(attrs)
         super(MongoAdminTimeWidget, self).__init__(attrs=final_attrs, format=format)
 
+    def build_attrs(self, extra_attrs=None, **kwargs):
+        "Helper function for building an attribute dictionary."
+        attrs = dict(self.attrs, **kwargs)
+        if extra_attrs:
+            extra_attrs = extra_attrs.copy()
+            attrs_class = extra_attrs.pop('class', None)
+            if attrs_class:
+                attrs['class'] = "{0} {1}".format(attrs['class'], attrs_class)
+            attrs.update(extra_attrs)
+        return attrs
 
-class MongoSplitDateTime(AdminSplitDateTime):
+
+class MongoSplitDateTime(forms.MultiWidget):
 
     def __init__(self, attrs=None):
         widgets = [MongoAdminDateWidget, MongoAdminTimeWidget]
-        # Note that we're calling MultiWidget, not SplitDateTimeWidget, because
-        # we want to define widgets.
-        forms.MultiWidget.__init__(self, widgets, attrs)
+        super(MongoSplitDateTime, self).__init__(widgets, attrs)
+
+    def format_output(self, rendered_widgets):
+        return format_html('<p class="datetime">{0} {1}<br />{2} {3}</p>',
+                           _('Date:'), rendered_widgets[0],
+                           _('Time:'), rendered_widgets[1])
 
     def decompress(self, value):
         '''由于我们的MongoDB中集合里时间以String格式存储, 若用到时间控件则选进行格式转换.
@@ -228,8 +253,11 @@ def get_widget(model_field, disabled=False):
     elif isinstance(model_field, BooleanField):
         return forms.CheckboxInput(attrs=attrs)
 
-    elif isinstance(model_field, ReferenceField) or model_field.choices:
-        return MongoSelectWidget(attrs={'class': ''})
+    elif isinstance(model_field, ReferenceField):
+        return forms.Select(attrs=attrs)
+
+    elif model_field.choices:
+        return MongoSelectWidget(attrs=attrs)
 
     elif isinstance(model_field, ListField) or isinstance(model_field,
                                                           EmbeddedDocumentField):
@@ -240,8 +268,7 @@ def get_widget(model_field, disabled=False):
 
 
 def get_attrs(model_field, disabled=False):
-    attrs = {}
-    attrs['class'] = 'form-control'
+    attrs = {'class': 'span6 xlarge'}
 
     # 加载field自定义属性
     event_list = getattr(model_field, "attr_list", [])

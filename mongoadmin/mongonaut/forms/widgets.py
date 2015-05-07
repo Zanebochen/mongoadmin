@@ -226,10 +226,10 @@ class MongoSplitDateTime(forms.MultiWidget):
 
     def format_output(self, id_, rendered_widgets):
         """Add id, name, class for ListField and EmbeddedField."""
-        return format_html('<p class="datetime {4}" id="{5}" name="{5}">{0} {1}<br />{2} {3}</p>',
+        return format_html('<p class="datetime {4}" id="{5}" name="{6}">{0} {1}<br />{2} {3}</p>',
                            _('Date:'), rendered_widgets[0],
                            _('Time:'), rendered_widgets[1],
-                           self.attrs['class'], id_)
+                           self.attrs['class'], id_, id_.lstrip('id_'))
 
     def decompress(self, value):
         '''由于我们的MongoDB中集合里时间以String格式存储, 若用到时间控件则选进行格式转换.

@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from django.forms import Form
 from django import forms
 from mongoengine.base import TopLevelDocumentMetaclass
 from mongoengine.fields import EmbeddedDocumentField, ListField
@@ -15,7 +14,7 @@ from django.utils.datastructures import SortedDict
 from django.utils.safestring import mark_safe
 
 
-class MongoModelForm(MongoModelFormBaseMixin, Form):
+class MongoModelForm(MongoModelFormBaseMixin, forms.Form):
     """
     This class will take a model and generate a form for the model.
     Recommended use for this project only.
@@ -54,18 +53,26 @@ class MongoModelForm(MongoModelFormBaseMixin, Form):
         # places newly entered form data on the form object.
         self.form.data = self.post_data_dict
 
+        form_fields = self.form.fields.copy()
         # Specifically adding list field keys to the form so they are included
         # in form.cleaned_data after the call to is_valid
-        for field_key, field in self.form.fields.iteritems():
+        for field_key, field in form_fields.iteritems():
             if has_digit(field_key):
                 # We have a list field.
                 base_key = make_key(field_key, exclude_last_string=True)
 
                 # Add new key value with field to form fields so validation
                 # will work correctly
-                for key in self.post_data_dict.keys():
-                    if base_key in key:
-                        self.form.fields.update({key: field})
+                if isinstance(field, forms.SplitDateTimeField):
+                    # rstrip `_0` and `_1`
+                    self.update_fields(-2, field, base_key)
+                else:
+                    self.update_fields(None, field, base_key)
+
+    def update_fields(self, index, field, base_key):
+        for key in self.post_data_dict.keys():
+            if base_key in key:
+                self.form.fields.update({key[:index]: field})
 
     def get_form(self):
         self.set_fields()

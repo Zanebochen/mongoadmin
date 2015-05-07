@@ -1,11 +1,55 @@
+function getNewInput(input){
+    /* Decide the clone or not.
+        Handle DateTimeField specifically cause it has two Widget.
+    */
+    newInput = input.clone();
+    if ($(newInput).hasClass('datetime')) {
+        // Get admin_media_prefix by grabbing it off the window object. It's
+        // set in the base.html template, so if it's not there, someone's
+        // overridden the template. In that case, we'll set a clearly-invalid
+        // value in the hopes that someone will examine HTTP requests and see it.
+        if (window.__admin_media_prefix__ != undefined) {
+            DateTimeShortcuts.admin_media_prefix = window.__admin_media_prefix__;
+        } else {
+            DateTimeShortcuts.admin_media_prefix = '/missing-admin-media-prefix/';
+        }
+
+        // remove original binded function.
+        newInput.children('span.datetimeshortcuts').remove();
+
+        var dateTimeFields = newInput.children('input');
+        var currentName = ''
+        for (var j = 0; j < dateTimeFields.length; j++) {
+            var dateTimeField = dateTimeFields[j];
+            var newIdNum = 1;
+            var currentNameArray = dateTimeField.name.split('_');
+            var dateTime_index = currentNameArray.pop();
+            var last_list_index = currentNameArray.pop();
+            var baseName = currentNameArray.join("_");
+
+            newIdNum += +last_list_index;
+            currentName = baseName + '_' + newIdNum + '_' + dateTime_index;
+            dateTimeField.name = currentName;
+            dateTimeField.id = 'id_' + currentName;
+
+            // Add function for facility.
+            if (dateTimeField.className.match(/vTimeField/)) {
+                DateTimeShortcuts.addClock(dateTimeField);
+            }else if (dateTimeField.className.match(/vDateField/)) {
+                DateTimeShortcuts.addCalendar(dateTimeField);
+            }
+        }
+    }
+    return newInput;
+}
+
 function addInputFromPrevious(input, embeddedDoc){
     /* This is a fuction to insert an input after an existing
         input.  It will correclty update the id and name so the
         input can be posted as desired.
-
         embeddedDoc must be an array.
      */
-    var newInput = input.clone();
+    var newInput = getNewInput(input);
     var currentNameArray = newInput.attr('name').split('_');
     var lastArrayString = currentNameArray.pop();
     var newIdNum = 1;

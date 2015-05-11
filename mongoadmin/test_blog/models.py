@@ -25,9 +25,9 @@ class User(Document):
 
 
 class Comment(EmbeddedDocument):
-    message = AdminStringField(default="DEFAULT EMBEDDED COMMENT")
+    message = AdminStringField(default="DEFAULT EMBEDDED COMMENT", help_text="信息")
     author = ReferenceField(User)
-#     post_date = DateTimeField()
+    post_date = DateTimeField(help_text="发表时间")
 
     # ListField(EmbeddedDocumentField(ListField(Something)) is not currenlty supported.
     # UI, and lists with list inside them need to be fixed.  The extra numbers appened to
@@ -39,9 +39,10 @@ class Comment(EmbeddedDocument):
 class EmbeddedUser(EmbeddedDocument):
     email = AdminStringField(max_length=50, default="default-test@test.com")
     user_name = AdminStringField(max_length=50, help_text="用户名")
-#     created_date = DateTimeField()  # Used for testing
+    created_date = DateTimeField()  # Used for testing
     is_admin = BooleanField()  # Used for testing
     # embedded_user_bio = EmbeddedDocumentField(Comment)
+    # Not well supported. front-end is not good.
     friends_list = ListField(ReferenceField(User), help_text=u"联系人")
 
     # Not supportted see above comment on Comment
@@ -50,16 +51,22 @@ class EmbeddedUser(EmbeddedDocument):
 
 class Post(Document):
     # See Post.title.max_length to make validation better!
-    title = AdminStringField(max_length=120, required=True, unique=True)
+    title = AdminStringField(max_length=4, required=True,
+                             unique=True, help_text="标题")
     content = AdminStringField(default="I am default content")
     author = ReferenceField(User, required=True)
     created_date = DateTimeField()
     published = BooleanField()
-#     creator = EmbeddedDocumentField(EmbeddedUser)
+    creator = EmbeddedDocumentField(EmbeddedUser)
     published_dates = ListField(DateTimeField())
     tags = ListField(AdminStringField(max_length=30))
-#     past_authors = ListField(ReferenceField(User))
-#     comments = ListField(EmbeddedDocumentField(Comment))
+    past_authors = ListField(ReferenceField(User))
+    comments = ListField(EmbeddedDocumentField(Comment))
+
+    transform_table = {
+        'message': u'信息',
+        'post_date': u'发表时间'
+    }
 
 #     def save(self, *args, **kwargs):
 #         if not self.created_date:

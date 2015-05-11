@@ -90,15 +90,18 @@ def get_document_value(document, key):
 
 @register.simple_tag()
 def get_document_key(document, key):
-    '''获取显示在前端的key值, 主要用于将英文属性名转为所需展示的中文.
+    '''
+    Get the verbose name shown in Web-site.
+    Note: for translating field name into Chinese.
     '''
 
-    # 优先显示属性的help_text, 推荐使用.
-    help_text = getattr(document._fields.get(key, None), 'help_text', None)
+    _field = document._fields.get(key, None)
+    # help_text, valid for Fields in Document, Not in EmbeddedDocument
+    help_text = getattr(_field, 'help_text', None)
     if help_text:
         return help_text
 
-    # 文档Model中的transform_table, 不推荐使用.
+    # for handling EmbeddedDocument.
     transform_table = getattr(document, 'transform_table', {})
     value = transform_table.get(key, '')
     if value:
@@ -107,6 +110,6 @@ def get_document_key(document, key):
     if key == 'id':
         return u'序号'
 
-    # 默认配置
+    # Default in Mongonaut config.
     value = settings.MONGONAUT_FIELD_TABLE.get(key, key)
     return value

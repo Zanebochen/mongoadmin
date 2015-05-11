@@ -269,7 +269,7 @@ def get_widget(model_field, disabled=False):
         return forms.Textarea(attrs=attrs)
 
     elif isinstance(model_field, DateTimeField):
-        return MongoSplitDateTime(attrs={'class': ''})
+        return MongoSplitDateTime(attrs=attrs)
 
     elif isinstance(model_field, BooleanField):
         return forms.CheckboxInput(attrs=attrs)

@@ -194,7 +194,7 @@ for (var i = 0; i < embeddedFields.length; i++) {
 
     for (j = 0; j < allClasses.length; j++) {
         var embeddedClass = allClasses[j];
-        if ($.inArray(embeddedClass, ['listField', 'embeddedField', 'span6', 'xlarge', '']) != -1) {
+        if ($.inArray(embeddedClass, ['listField', 'embeddedField', 'span6', 'xlarge', 'datetime', '']) != -1) {
             continue;
         }
         // Make sure to only get the base class from the group of embedded fields

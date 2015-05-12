@@ -51,10 +51,10 @@ class EmbeddedUser(EmbeddedDocument):
 
 class Post(Document):
     # See Post.title.max_length to make validation better!
-    title = AdminStringField(max_length=4, required=True,
+    title = AdminStringField(max_length=20, required=True,
                              unique=True, help_text="标题")
     content = AdminStringField(default="I am default content")
-    author = ReferenceField(User, required=True)
+    author = ReferenceField(User)
     created_date = DateTimeField()
     published = BooleanField()
     creator = EmbeddedDocumentField(EmbeddedUser)

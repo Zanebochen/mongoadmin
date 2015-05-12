@@ -4,6 +4,7 @@ import logging
 from django.contrib import messages
 from django.core.exceptions import ValidationError, PermissionDenied
 from django.contrib.auth.decorators import login_required
+from django.http.response import HttpResponseForbidden
 from django.forms import FileField
 from django.utils.importlib import import_module
 from django.utils.functional import cached_property

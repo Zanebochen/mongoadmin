@@ -283,11 +283,12 @@ class DocumentDetailView(MongonautViewMixin, TemplateView):
             if isinstance(self.document._fields[key], EmbeddedDocumentField):
                 # 处理内嵌文档
                 embedded_field = self.document[key]
-                doc = embedded_field.__doc__
-                embedded_dict = dict(field=embedded_field,
-                                     name=doc.split('\n')[0] if doc else key,
-                                     keys=embedded_field._fields.keys())
-                context['embedded_documents'].append(embedded_dict)
+                if embedded_field:
+                    doc = embedded_field.__doc__
+                    embedded_dict = dict(field=embedded_field,
+                                         name=doc.split('\n')[0] if doc else key,
+                                         keys=embedded_field._fields.keys())
+                    context['embedded_documents'].append(embedded_dict)
                 continue
             if isinstance(self.document._fields[key], ListField):
                 context['list_fields'].append(key)

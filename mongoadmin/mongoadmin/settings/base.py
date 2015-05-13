@@ -96,7 +96,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 
 
 ROOT_URLCONF = 'mongoadmin.urls'
-LOGIN_URL = 'login'
+LOGIN_URL = '/login/'
 
 WSGI_APPLICATION = 'mongoadmin.wsgi.application'
 

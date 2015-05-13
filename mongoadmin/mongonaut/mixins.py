@@ -2,7 +2,7 @@
 import logging
 
 from django.contrib import messages
-from django.core.exceptions import ValidationError, PermissionDenied
+from django.core.exceptions import ValidationError
 from django.contrib.auth.decorators import login_required
 from django.http.response import HttpResponseForbidden
 from django.forms import FileField
@@ -87,7 +87,7 @@ class MongonautViewMixin(MongonautBaseViewMixin):
         self.set_mongoadmin()
         permission_name = self.get_permission()
         if not self.check_permission(permission_name):
-            raise PermissionDenied(
+            return HttpResponseForbidden(
             """you have no %s permission, please contact adminstrator."""\
             % ({'has_add_permission': u'add',
                 'has_delete_permission': u'delete',

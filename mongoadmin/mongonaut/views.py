@@ -96,17 +96,17 @@ class DocumentListView(MongonautViewMixin, TemplateView):
         queryset = self.document.objects
         if q and select:
             try:
-                # 自定义数据转换
+                # data transfer
                 validate_method = getattr(self.document, 'validate_{key}'.format(key=select), None)
-                if validate_method:
+                if callable(validate_method):
                     q = validate_method(q)
 
                 mongo_field = getattr(self.document, select, None)
                 mongo_field.validate(q)
-            except mongo_ValidationError:
+            except mongo_ValidationError:  # raise by mongo_field.validate
                 messages.add_message(self.request, messages.ERROR,
                                      u'invalid value:{0}'.format(q))
-            except django_ValidationError:
+            except django_ValidationError:  # raise by validate_method
                 messages.add_message(self.request, messages.ERROR,
                                      u'invalid value:{0}'.format(q))
             except AttributeError:

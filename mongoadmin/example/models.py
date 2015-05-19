@@ -25,7 +25,7 @@ AdminImageURLField    String    ImageField    MongoImageWidget
 图片上传控件,默认调用Cotton存储,限制上传格式为png,gif,jpg, jpeg,大小为2M.width属性控制图片显示大小,无需设置height属性.
 
 常见Field属性说明:
-1.help_text: 属性的名称.
+1.verbose_name: 属性的名称.
 2.default: 默认值, 是一个值或者一个可调用对象.
 3.widget: 前端显示的控件的类型
 4.form_field: 自定义Mongoengine Field 的 django form field, 用于校验数据.
@@ -61,19 +61,19 @@ APP_LABEL = __file__.split(os.path.sep)[-2]
 class MiccardAnchor(Document):
     """娱乐主播库
     """
-    uid = AdminIntField(min_value=0, help_text="主播CC号")
-    signtime = DateTimeField(help_text="签约时间", default=datetime.datetime.now)
-    nickname = AdminStringField(help_text="主播昵称", max_length=20)  # fake
-    gender = AdminIntSelectField(choices=GENDER_TYPE, help_text="性别")
-    cellphone = AdminUnsignedIntField(help_text="手机号码",
+    uid = AdminIntField(min_value=0, verbose_name="主播CC号")
+    signtime = DateTimeField(verbose_name="签约时间", default=datetime.datetime.now)
+    nickname = AdminStringField(verbose_name="主播昵称", max_length=20)  # fake
+    gender = AdminIntSelectField(choices=GENDER_TYPE, verbose_name="性别")
+    cellphone = AdminUnsignedIntField(verbose_name="手机号码",
                                       validate_js=[('isPhone', 'true', 'phoneCheck.js')])
-    poster = AdminImageURLField(help_text="海报", upload_to="测试_%y-%m-%d")
+    poster = AdminImageURLField(verbose_name="海报", upload_to="测试_%y-%m-%d")
 
-    admin_time = AdminStringField(help_text="时间(不包括日期)", widget=MongoAdminTimeWidget)
-    admin_day = AdminStringField(help_text="日期(不包括时间)", widget=MongoAdminDateWidget)
-    location = AdminStringField(help_text="所在地", widget=MongoAreaCitySelectWidget)
+    admin_time = AdminStringField(verbose_name="时间(不包括日期)", widget=MongoAdminTimeWidget)
+    admin_day = AdminStringField(verbose_name="日期(不包括时间)", widget=MongoAdminDateWidget)
+    location = AdminStringField(verbose_name="所在地", widget=MongoAreaCitySelectWidget)
     # 日志记录
-    last_editor = AdminStringField(help_text="最后编辑人")  # fake
+    last_editor = AdminStringField(verbose_name="最后编辑人")  # fake
 
     meta = {
         'indexes': ['uid', 'signtime'],

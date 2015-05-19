@@ -276,7 +276,7 @@ def auto_add_sys_last_editor(module_name, *args):
 
             # 添加到Document内置属性.
             document._fields_ordered += ('sys_last_editor', )
-            sys_last_editor = StringField(help_text="最后编辑人")
+            sys_last_editor = StringField(verbose_name="最后编辑人")
             document._fields['sys_last_editor'] = sys_last_editor
             document.sys_last_editor = sys_last_editor
             # 添加转换函数.

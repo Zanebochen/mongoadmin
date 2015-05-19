@@ -15,13 +15,12 @@
     <div class="span12" id="document-actions">
         <p>
             <div class="btn-group">
-                {% if has_edit_permission %}            
+                {% if has_edit_permission %}
                     <a class="btn btn-primary" href="{% url "document_detail_edit_form" app_label document_name document.id %}">
                         <i class="icon-pencil icon-white"></i>编辑
                     </a>
-                            
                 {% endif %}
-                {% if has_delete_permission %}                        
+                {% if has_delete_permission %}
                     <a id="action_delete"  class="btn btn-danger" href="#"><i class="icon-trash icon-white"></i>删除</a>
                 {% endif %}
             </div>
@@ -36,10 +35,10 @@
             <thead>
                 <tr>
                     <th>属性名</th>
-                    <th>属性值</th>                    
+                    <th>属性值</th>
                 </tr>
             </thead>
-            <tbody>            
+            <tbody>
             {% for key in keys %}
                 <tr>
                 {% ifnotequal key 'id' %}
@@ -48,7 +47,7 @@
                 {% endifnotequal %}
                 </tr>
             {% endfor %}
-            </tbody>            
+            </tbody>
         </table>
     </div>
     <div class="span6">
@@ -58,17 +57,17 @@
                     <thead>
                         <tr>
                             <th>Field name</th>
-                            <th>Value</th>                    
+                            <th>Value</th>
                         </tr>
                     </thead>
-                    <tbody>            
+                    <tbody>
                     {% for key in list_fields %}
                         <tr>
-                            <td>{{ key}}</td>
-                            <td>{% get_document_value document key %}</td>                    
+                            <td>{% get_document_key document key %}</td>
+                            <td>{% get_document_value document key %}</td>
                         </tr>
                     {% endfor %}
-                    </tbody>            
+                    </tbody>
                 </table>
             {% endif %}
             {% for document in embedded_documents %}
@@ -77,23 +76,23 @@
                     <thead>
                         <tr>
                             <th>内嵌属性</th>
-                            <th>属性值</th>                    
+                            <th>属性值</th>
                         </tr>
                     </thead>
-                    <tbody>            
+                    <tbody>
                     {% for key in document.keys %}
                         <tr>
                             <td>{% get_document_key document.field key %}</td>
-                            <td>{% get_document_value document.field key %}</td>                    
+                            <td>{% get_document_value document.field key %}</td>
                         </tr>
                     {% endfor %}
-                    </tbody>            
+                    </tbody>
                 </table>
                 </br>
-            {% endfor %}            
-        </div>        
+            {% endfor %}
+        </div>
     </div>
-</div>    
+</div>
 
 {% endblock content %}
 
@@ -102,4 +101,3 @@
 {% csrf_token %}
 </form>
 {% endblock extrajs %}
-

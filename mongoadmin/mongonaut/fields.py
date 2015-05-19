@@ -6,7 +6,7 @@ New:
     form_field: 自定义Mongoengine Field 的 django form field, 用于校验数据.
     validate_js, 元组列表: 前端js的校验方法(详见JQuery validation.), 需要有序.
     attr_list, 列表: 前端属性列表,用于绑定js事件.
-    help_text, str: 每个field的自带属性, 现被用作页面说明字段显示.
+    verbose_name, str: 每个field的自带属性, 现被用作页面说明字段显示.
 
 说明:
     1.为了兼容前端,并使得 ModelField的限制条件能够同时满足MongoEngine与Jquery Validation,不建议使用

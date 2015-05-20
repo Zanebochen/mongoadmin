@@ -4,7 +4,7 @@ from django.core.urlresolvers import reverse
 from django.utils.safestring import mark_safe
 
 from mongoengine.fields import (URLField, ListField, ReferenceField,
-                                DateTimeField, ObjectIdField)
+                                DateTimeField, ObjectIdField, EmbeddedDocumentField)
 from mongonaut.conf import settings
 from mongonaut.fields import AdminImageURLField
 from mongonaut.forms.widgets import absolute_media_path
@@ -63,7 +63,17 @@ def process_time(value, field):
 
 
 def process_list(value, field):
-    return value
+    base_list = value[:settings.MONGONAUT_LIST_MAX_SHOW]
+    if isinstance(field.field, EmbeddedDocumentField):
+        base_list = map(str, base_list)
+    else:
+        func = FIELD_TO_VALUE.get(type(field.field), None)
+        if callable(func):
+            def trans(value, field=field.field):
+                return func(value, field)
+            base_list = map(trans, base_list)
+
+    return "[ {0} ]".format(", ".join(base_list))
 
 
 def process_none(value, field):

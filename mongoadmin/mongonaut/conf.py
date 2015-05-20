@@ -6,6 +6,7 @@ from appconf import AppConf
 class MongonautConf(AppConf):
     FIELD_TABLE = {}
     APP_TABLE = {}
+    LIST_MAX_SHOW = 3
 
     # CSS File CDN
     METISMENU_CSS = "http://cdn.bootcss.com/metisMenu/1.1.0/metisMenu.min.css"

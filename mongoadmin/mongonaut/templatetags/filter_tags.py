@@ -30,6 +30,7 @@ def get_search_fields(context, document=None, instance=None, template='_fields.h
 
         fields.append(field)
     return {'fields': fields,
+            'document': document,
             'media': form.media,
             'template': template}
 

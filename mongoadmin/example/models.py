@@ -61,19 +61,19 @@ APP_LABEL = __file__.split(os.path.sep)[-2]
 class MiccardAnchor(Document):
     """娱乐主播库
     """
-    uid = AdminIntField(min_value=0, verbose_name="主播CC号")
-    signtime = DateTimeField(verbose_name="签约时间", default=datetime.datetime.now)
-    nickname = AdminStringField(verbose_name="主播昵称", max_length=20)  # fake
+    uid = AdminIntField(min_value=0, verbose_name="CC号")
+    signtime = DateTimeField(verbose_name="签约时间", default=datetime.datetime.utcnow)
+    nickname = AdminStringField(verbose_name="昵称", max_length=20)  # fake
     gender = AdminIntSelectField(choices=GENDER_TYPE, verbose_name="性别")
     cellphone = AdminUnsignedIntField(verbose_name="手机号码",
                                       validate_js=[('isPhone', 'true', 'phoneCheck.js')])
-    poster = AdminImageURLField(verbose_name="海报", upload_to="测试_%y-%m-%d")
+    poster = AdminImageURLField(verbose_name="海报", upload_to="test_%y-%m-%d")
 
-    admin_time = AdminStringField(verbose_name="时间(不包括日期)", widget=MongoAdminTimeWidget)
-    admin_day = AdminStringField(verbose_name="日期(不包括时间)", widget=MongoAdminDateWidget)
+    admin_time = AdminStringField(verbose_name="时间", widget=MongoAdminTimeWidget)
+    admin_day = AdminStringField(verbose_name="日期", widget=MongoAdminDateWidget)
     location = AdminStringField(verbose_name="所在地", widget=MongoAreaCitySelectWidget)
     # 日志记录
-    last_editor = AdminStringField(verbose_name="最后编辑人")  # fake
+    last_editor = AdminStringField(verbose_name="最后编辑")  # fake
 
     meta = {
         'indexes': ['uid', 'signtime'],
@@ -101,31 +101,31 @@ class MiccardAnchor(Document):
         else:
             return ""
 
-    # text为操作名称, func为指定的函数名称.
-    operations = [{
-        'text': "修改时间",
-        'func': 'change_time',
-        }, {
-        'text': "修改",
-        'func': 'change',
-        }, {
-        'text': "跳转",
-        'func': 'goto',
-        }
-    ]
-
-    def goto(self):
-        """跳转到新页面,注意一定要有schema前缀,如http://"""
-        return "http://www.baidu.com"
-
-    def change(self):
-        """刷新页面"""
-        return "refresh"
-
-    def change_time(self):
-        self.admin_time = datetime.datetime.now().strftime("%H:%M:%S")
-        print self.admin_time
-        self.save()
+#     # text为操作名称, func为指定的函数名称.
+#     operations = [{
+#         'text': "修改时间",
+#         'func': 'change_time',
+#         }, {
+#         'text': "修改",
+#         'func': 'change',
+#         }, {
+#         'text': "跳转",
+#         'func': 'goto',
+#         }
+#     ]
+# 
+#     def goto(self):
+#         """跳转到新页面,注意一定要有schema前缀,如http://"""
+#         return "http://www.baidu.com"
+# 
+#     def change(self):
+#         """刷新页面"""
+#         return "refresh"
+# 
+#     def change_time(self):
+#         self.admin_time = datetime.datetime.now().strftime("%H:%M:%S")
+#         print self.admin_time
+#         self.save()
 
 
 class MysqlMiccardAnchor(models.Model):

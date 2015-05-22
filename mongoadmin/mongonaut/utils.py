@@ -156,7 +156,8 @@ def get_from_change_data(form):
     for change_field in form.changed_data:
         initial_data = form.fields[change_field].initial
         newest_data = form.cleaned_data.get(change_field, "")
-        datas[change_field] = u"change {0} to {1}".format(initial_data, newest_data).encode('utf-8')
+        if initial_data != newest_data:
+            datas[change_field] = u"change {0} to {1}".format(initial_data, newest_data).encode('utf-8')
     return datas
 
 

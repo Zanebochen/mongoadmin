@@ -18,7 +18,7 @@ class BaseMongoAdmin(object):
     # Exclude the fields to be displayed as columns.
     exclude_fields = []
 
-    # shows uo on edit page while not on add page.
+    # shows on edit page while not on add page.
     show_in_edit = []
 
     ordering = None

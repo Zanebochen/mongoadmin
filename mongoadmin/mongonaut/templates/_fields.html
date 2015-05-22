@@ -1,9 +1,10 @@
 {% load i18n %}
+{% load mongonaut_tags %}
 {{ media }}
 <form class="form-inline" role="form" action="" method="get" >
 {% for field in fields %}
     <div class="form-group">
-      <a>{{ field.help_text|safe }}:  </a>
+      <a>{% get_document_key document field.name%}:  </a>
       {{ field }}
    </div>
 {% endfor %}

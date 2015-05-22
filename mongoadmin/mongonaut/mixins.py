@@ -266,7 +266,7 @@ class MongonautFormViewMixin(object):
         self.form.is_bound = True
         if self.form.is_valid():
 
-            self.document_map_dict = MongoModelForm(model=self.document_type).create_document_dictionary(self.document_type)
+#             self.document_map_dict = MongoModelForm(model=self.document_type).create_document_dictionary(self.document_type)
             self.new_document = self.document_type
 
             # Used to keep track of embedded documents in lists.  Keyed by the list and the number of the

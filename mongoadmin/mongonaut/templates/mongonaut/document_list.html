@@ -7,26 +7,25 @@
 
 <h1 style="text-shadow:0 1px 1px #444;">{{ document_doc }}</h1>
 {% if has_filters %}
-        {% get_search_fields document search_data %}
+    {% get_search_fields document search_data %}
 {% else %}
-{% if is_search %}
-    
-    <form id="search_form_id" action="" method="get" class="input-group custom-search-form">
-        <div class="row">
-            <div class="col-lg-10">
-                <input type="text" name="q" class="form-control" value="{{ search_str }}" placeholder="搜索...">
-                <select id="select_id" name="select" class="selectpicker" >
-                    {% for field in search_fields %}
-                        <option {% ifequal field search_type %} selected = true {% endifequal %} value="{{ field }}">
-                            {% get_document_key document field%}
-                        </option>
-                    {% endfor %}
-                </select>
-                <input type="submit" class="btn btn-primary" value="搜索">
-            </div>
-        </div>
-    </form>
-{% endif %}
+    {% if is_search %}
+        <form id="search_form_id" action="" method="get" class="input-group custom-search-form">
+            <div class="row">
+                <div class="col-lg-10">
+                    <input type="text" name="q" class="form-control" value="{{ search_str }}" placeholder="搜索...">
+                    <select id="select_id" name="select" class="selectpicker" >
+                        {% for field in search_fields %}
+                            <option {% ifequal field search_type %} selected = true {% endifequal %} value="{{ field }}">
+                                {% get_document_key document field%}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    <input type="submit" class="btn btn-primary" value="搜索">
+                </div>
+           </div>
+        </form>
+    {% endif %}
 {% endif %}
 {% if has_add_permission %}
     <p>

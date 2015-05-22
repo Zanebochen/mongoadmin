@@ -92,7 +92,7 @@ class MongoModelFormBaseMixin(object):
     def get_form_field_dict(self, model_dict):
         """
         Takes a model dictionary representation and creates a dictionary
-        keyed by form field.  Each value is a  keyed 4 tuple of:
+        keyed by form field.  Each value is a keyed 4 tuple of:
         (widget, mode_field_instance, model_field_type, field_key)
         """
         return_dict = SortedDict()
@@ -100,6 +100,7 @@ class MongoModelFormBaseMixin(object):
             if not field_key.startswith("_"):
                 widget = field_dict.get('_widget', None)
                 if widget is None:
+                    # EmbeddedDocumentField
                     return_dict[field_key] = self.get_form_field_dict(field_dict)
                     return_dict[field_key].update({'_field_type': field_dict.get('_field_type', None)})
                 else:
@@ -137,7 +138,7 @@ class MongoModelFormBaseMixin(object):
                     else:
                         field_value.widget.attrs['class'] += ' listField'
 
-                    # Compute number value for list key
+                    # Compute number value for list key according to existed form.fields
                     list_keys = [field_key for field_key in self.form.fields.keys()
                                            if has_digit(field_key)]
 
@@ -148,10 +149,7 @@ class MongoModelFormBaseMixin(object):
 
                 if parent_key is not None:
 
-                    # Get the base key for our embedded field class
-                    valid_base_keys = [model_key for model_key in self.model_map_dict.keys()
-                                                 if not model_key.startswith("_")]
-                    while base_key not in valid_base_keys and base_key:
+                    while base_key not in self.valid_base_keys and base_key:
                         base_key = make_key(base_key, exclude_last_string=True)
 
                     # We need to remove the trailing number from the key
@@ -208,6 +206,7 @@ class MongoModelFormBaseMixin(object):
             default_value = None
 
         # 优先widget匹配, 否则mongo field匹配.
+        # TODO: 先从model_field获取form_field字段, 后根据widget字段获取.
         if getattr(model_field, 'widget', None):
             field_class = get_form_field_class_from_widget(model_field, widget)
         elif widget and isinstance(widget, forms.Select):
@@ -280,7 +279,7 @@ class MongoModelFormBaseMixin(object):
             else:
                 # Handeling all other fields and id
                 return_data = (document._data.get(None, None) if current_key == "id" else
-                              document._data.get(current_key, None))
+                               document._data.get(current_key, None))
 
                 # 将原始属性值转为所希望展示的值
                 transform_method = getattr(document, 'transform_{key}'.format(key=field_key), None)

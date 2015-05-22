@@ -45,7 +45,12 @@ class MongoModelForm(MongoModelFormBaseMixin, forms.Form):
             self.model_map_dict = self.create_document_dictionary(self.model)
 
         form_field_dict = self.get_form_field_dict(self.model_map_dict)
+
         self.set_validate_js(form_field_dict)
+
+        # Get base key for embedded field class, used in self.set_form_fields
+        self.valid_base_keys = [model_key for model_key in self.model_map_dict.keys()
+                                if not model_key.startswith("_")]
         self.set_form_fields(form_field_dict)
 
     def set_post_data(self):
@@ -100,11 +105,13 @@ class MongoModelForm(MongoModelFormBaseMixin, forms.Form):
         if not isinstance(document, TopLevelDocumentMetaclass) and doc_key:
             doc_dict.update({"_field_type": EmbeddedDocumentField})
 
-        if isinstance(document, Document):
+        if isinstance(document, TopLevelDocumentMetaclass):
             # Note: 只有集合才能有此属性, 其余的如EmbeddedDocument没有这些属性.
             # 不在Add,Edit中显示,默认情况下在List下显示.
             only_show_in_list = getattr(document, 'only_show_in_list', ())
             # 在Edit界面只读, 在Add界面不显示.
+            # TODO: getattr from document, not from mongoadmin.
+            # so can remove if isinstance(document, TopLevelDocumentMetaclass)
             show_in_edit = getattr(document.mongoadmin, 'show_in_edit', ())
             # 与only_show_in_list相对的概念, 允许在Add, Edit界面中被编辑.
             allowed_edit = getattr(document, 'allowed_edit', document._fields_ordered)

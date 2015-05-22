@@ -337,10 +337,8 @@ class DocumentEditFormView(MongonautViewMixin, MongonautFormViewMixin, FormView)
         self.document_type = getattr(self.models, self.document_name)
         self.ident = self.kwargs.get('id')
         self.document = get_document_or_404(self.document_type.objects, pk=self.ident)
-        self.form = Form()
 
         if self.request.method == 'POST':
-            # New data.
             self.form = self.process_post_form(u'修改已被保存.', is_save=False)
         else:
             self.form = MongoModelForm(model=self.document_type, instance=self.document).get_form()
@@ -381,7 +379,6 @@ class DocumentAddFormView(MongonautViewMixin, MongonautFormViewMixin, FormView):
 
     def get_form(self, Form):
         self.document_type = getattr(self.models, self.document_name)
-        self.form = Form()
 
         if self.request.method == 'POST':
             self.form = self.process_post_form(u'数据已成功保存.')

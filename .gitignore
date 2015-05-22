@@ -9,3 +9,5 @@
 /mongoadmin/media
 /mongoadmin/logs
 /mongoadmin/.project
+/mongoadmin/.coverage
+/mongoadmin/htmlcov

@@ -43,11 +43,13 @@ AdminImageURLField    String    ImageField    MongoImageWidget
 """
 from django.db import models
 from django.utils.safestring import mark_safe
-from mongoengine import Document, DateTimeField
-from mongonaut.fields import AdminStringField, AdminUnsignedIntField, \
-    AdminIntSelectField, AdminIntField, AdminImageURLField
-from mongonaut.forms.widgets import MongoAreaCitySelectWidget, \
-    MongoAdminTimeWidget, MongoAdminDateWidget
+from mongoengine import (Document, DateTimeField, ListField, EmbeddedDocument,
+                         BooleanField, EmbeddedDocumentField)
+from mongonaut.fields import (AdminStringField, AdminUnsignedIntField,
+                              AdminIntSelectField, AdminIntField,
+                              AdminImageURLField, AdminURLField)
+from mongonaut.forms.widgets import (MongoAreaCitySelectWidget,
+                                     MongoAdminTimeWidget, MongoAdminDateWidget)
 from mongonaut.utils import get_last_editor
 import datetime
 import os
@@ -56,6 +58,13 @@ import os
 GENDER_TYPE = ((0, '女'), (1, '男'), (2, '保密'))
 # 获取models文件的app名字
 APP_LABEL = __file__.split(os.path.sep)[-2]
+
+
+class EmbeddedUser(EmbeddedDocument):
+    email = AdminStringField(max_length=50, default="default-test@test.com")
+    user_name = AdminStringField(max_length=50, verbose_name="名字")
+    created_date = DateTimeField()  # Used for testing
+    is_admin = BooleanField()  # Used for testing
 
 
 class MiccardAnchor(Document):
@@ -68,12 +77,17 @@ class MiccardAnchor(Document):
     cellphone = AdminUnsignedIntField(verbose_name="手机号码",
                                       validate_js=[('isPhone', 'true', 'phoneCheck.js')])
     poster = AdminImageURLField(verbose_name="海报", upload_to="test_%y-%m-%d")
+    url = AdminURLField(verbose_name="个人主页", required=True,
+                        max_length=50, min_length=10)
 
     admin_time = AdminStringField(verbose_name="时间", widget=MongoAdminTimeWidget)
     admin_day = AdminStringField(verbose_name="日期", widget=MongoAdminDateWidget)
     location = AdminStringField(verbose_name="所在地", widget=MongoAreaCitySelectWidget)
     # 日志记录
     last_editor = AdminStringField(verbose_name="最后编辑")  # fake
+
+    tags = ListField(AdminStringField(max_length=30))
+    middleman = EmbeddedDocumentField(EmbeddedUser)
 
     meta = {
         'indexes': ['uid', 'signtime'],

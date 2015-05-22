@@ -2,11 +2,14 @@
 from django import template
 from django.core.urlresolvers import reverse
 from django.utils.safestring import mark_safe
+from django.forms.util import to_current_timezone
 
 from mongoengine.fields import (URLField, ListField, ReferenceField,
                                 DateTimeField, ObjectIdField, EmbeddedDocumentField)
+from pytz import utc
+
 from mongonaut.conf import settings
-from mongonaut.fields import AdminImageURLField
+from mongonaut.fields import AdminImageURLField, AdminURLField
 from mongonaut.forms.widgets import absolute_media_path
 
 register = template.Library()
@@ -59,7 +62,10 @@ def process_document(value, field):
 
 
 def process_time(value, field):
-    return value.strftime("%Y-%m-%d %H:%M:%S") if value else ""
+    if not value:
+        return ""
+    value = to_current_timezone(utc.localize(value))
+    return value.strftime("%Y-%m-%d %H:%M:%S")
 
 
 def process_list(value, field):
@@ -84,6 +90,7 @@ FIELD_TO_VALUE = {
     ReferenceField: process_document,
     DateTimeField: process_time,
     AdminImageURLField: process_image_url,
+    AdminURLField: process_url,
     URLField: process_url,
     ListField: process_list
 }

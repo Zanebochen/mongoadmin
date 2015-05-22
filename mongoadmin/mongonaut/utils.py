@@ -151,13 +151,16 @@ def get_from_change_data(form):
     """Get change data from form.
     @param form, Django.Form or subclass.
     @return: dict: {field: change_data}
+    TODO: if USE_TZ = True, then something happen like this:
+    'change 2015-05-22 12:06:09 to 2015-05-22 20:08:42+08:00'
+    beacuse MongoEngine save the UTC in MongoDB, but do not set tz
+    when get time from MongoDB, so the initial has not tz.
     """
     datas = {}
     for change_field in form.changed_data:
         initial_data = form.fields[change_field].initial
         newest_data = form.cleaned_data.get(change_field, "")
-        if initial_data != newest_data:
-            datas[change_field] = u"change {0} to {1}".format(initial_data, newest_data).encode('utf-8')
+        datas[change_field] = u"change {0} to {1}".format(initial_data, newest_data).encode('utf-8')
     return datas
 
 
@@ -224,8 +227,7 @@ def get_last_editor(cls, app_label=""):
                                            message).encode('utf-8')
         name = user.last_name + user.first_name
         return mark_safe("""<p title="{0}">{1}</p>"""
-                         .format(message, name.encode('utf-8')
-                                 if name else user.username).encode('utf-8')
+                         .format(message, unicode(name) if name else user.username)
                          )
     return ''
 
